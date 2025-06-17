@@ -3,6 +3,7 @@ import 'package:pakket/routes/app_routes.dart';
 import 'package:pakket/view/auth/password_reset.dart';
 import 'package:pakket/view/auth/signin.dart';
 import 'package:pakket/view/auth/signup.dart';
+import 'package:pakket/view/home/home.dart';
 import 'package:pakket/view/splash/onboarding.dart';
 import 'package:pakket/view/splash/splash_screen.dart';
 
@@ -19,7 +20,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const SignInScreen());
       case AppRoutes.passwordreset:
         return MaterialPageRoute(builder: (_) => const PasswordReset());
-
+      case AppRoutes.home:
+        return MaterialPageRoute(builder: (_) => const HomeScreen());
       default:
         return MaterialPageRoute(
           builder: (_) =>

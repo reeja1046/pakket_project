@@ -32,7 +32,7 @@ class CustomTextField extends StatelessWidget {
           hintStyle: TextStyle(color: Colors.grey[600]),
           hintText: hint,
           filled: true,
-          fillColor: Colors.grey[200],
+          fillColor: CustomColors.baseContainer,
           suffixIcon:
               suffixIcon ??
               (isPassword

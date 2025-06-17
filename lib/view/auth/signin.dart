@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:pakket/controller/auth.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/view/auth/widget.dart';
 
@@ -141,6 +142,11 @@ class _SignInScreenState extends State<SignInScreen> {
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
                     // Handle sign-in
+                    login(
+                      phoneController.text,
+                      passwordController.text,
+                      context,
+                    );
                   }
                 },
                 child: const Text(

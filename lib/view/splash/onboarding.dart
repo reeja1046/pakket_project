@@ -71,7 +71,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               SizedBox(height: height * 0.1),
               _buildSkipButton(),
               SizedBox(
-                height: height * 0.75,
+                height: height * 0.74,
                 width: double.infinity,
                 child: Image.asset(
                   'assets/splash/grocery.png',

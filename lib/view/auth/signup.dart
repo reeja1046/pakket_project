@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pakket/controller/auth.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/view/auth/widget.dart';
 
@@ -149,8 +150,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                       ),
                       onPressed: () {
+                        print('***********');
+                        print(nameController.text);
+                        print(emailController.text);
+                        print(passwordController.text);
+                        print(phoneController.text);
+
                         if (_formKey.currentState!.validate()) {
+                          print('========');
                           // Proceed with form submission
+                          signUp(
+                            nameController.text,
+                            emailController.text,
+                            passwordController.text,
+                            phoneController.text,
+                            context,
+                          );
                         }
                       },
                       child: const Text(
