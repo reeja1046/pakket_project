@@ -121,7 +121,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            Navigator.of(context).pushNamed('/passwordreset');
+                            Navigator.of(context).pushNamed('/phonenumber');
                           },
                       ),
                     ],

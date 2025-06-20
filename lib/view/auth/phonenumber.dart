@@ -2,57 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/view/auth/widget.dart';
 
-class PasswordReset extends StatefulWidget {
-  const PasswordReset({super.key});
+class PhoneNumberScreen extends StatefulWidget {
+  const PhoneNumberScreen({super.key});
 
   @override
-  State<PasswordReset> createState() => _PasswordResetState();
+  State<PhoneNumberScreen> createState() => _PhoneNumberScreenState();
 }
 
-class _PasswordResetState extends State<PasswordReset> {
-  final otp1Controller = TextEditingController();
-  final otp2Controller = TextEditingController();
-  final otp3Controller = TextEditingController();
-  final otp4Controller = TextEditingController();
-  final passwordController = TextEditingController();
+class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
+  final phoneController = TextEditingController();
 
   @override
   void dispose() {
-    otp1Controller.dispose();
-    otp2Controller.dispose();
-    otp3Controller.dispose();
-    otp4Controller.dispose();
-    passwordController.dispose();
+    phoneController.dispose();
     super.dispose();
-  }
-
-  Widget _buildOtpBox(TextEditingController controller) {
-    return SizedBox(
-      width: 60,
-      child: TextField(
-        controller: controller,
-        keyboardType: TextInputType.number,
-        textAlign: TextAlign.center,
-        maxLength: 1,
-        decoration: InputDecoration(
-          counterText: "",
-          filled: true,
-          fillColor: Colors.grey[200], // same as your custom text field bg
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: CustomColors.baseColor, width: 1),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: CustomColors.baseColor, width: 1),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: CustomColors.baseColor, width: 2.5),
-          ),
-        ),
-      ),
-    );
   }
 
   @override
@@ -86,29 +49,20 @@ class _PasswordResetState extends State<PasswordReset> {
                 ),
                 SizedBox(height: size.height * 0.08),
                 const Text(
-                  'Enter the OTP Code received from your\nRegistered Whatsapp no.',
+                  'Enter the Registered Whatsapp no.',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(height: size.height * 0.03),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildOtpBox(otp1Controller),
-                    _buildOtpBox(otp2Controller),
-                    _buildOtpBox(otp3Controller),
-                    _buildOtpBox(otp4Controller),
-                  ],
-                ),
-                SizedBox(height: size.height * 0.06),
+
                 CustomTextField(
-                  hint: "*New password",
-                  controller: passwordController,
+                  hint: "Phone number",
+                  controller: phoneController,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Please enter your password';
-                    } else if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
+                    } else if (value.length < 10) {
+                      return 'Enter valid phone number';
                     }
                     return null;
                   },
@@ -126,9 +80,11 @@ class _PasswordResetState extends State<PasswordReset> {
                         vertical: size.height * 0.015,
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context).pushNamed('/passwordreset');
+                    },
                     child: const Text(
-                      'SUBMIT NOW',
+                      'Send OTP',
                       style: TextStyle(
                         fontSize: 18,
                         color: Colors.black,

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:pakket/view/checkout.dart';
+import 'package:pakket/view/cart.dart';
+import 'package:pakket/view/checkout/checkout.dart';
 import 'package:pakket/view/home/home.dart';
 import 'package:pakket/view/order.dart';
-import 'package:pakket/view/wishlist.dart';
 
 class BottomNavScreen extends StatefulWidget {
   const BottomNavScreen({super.key});
@@ -17,7 +17,8 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
   final List<Widget> _screens = [
     HomeScreen(),
     WishlistScreen(),
-    CheckoutScreen(),
+
+    CheckoutPage(),
     OrderScreen(),
   ];
 
@@ -91,7 +92,7 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
               colorBlendMode: BlendMode.srcIn,
             ),
             activeIcon: Image.asset(
-              'assets/logo/orders.png',
+              'assets/bottomnavbar/orders.png',
               width: 24,
               color: Colors.orange,
               colorBlendMode: BlendMode.srcIn,

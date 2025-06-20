@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 Future<List<HeroBanner>> fetchHeroBanners() async {
   final token = await getToken();
-  print(token);
   if (token == null) {
     throw Exception('No token found');
   }

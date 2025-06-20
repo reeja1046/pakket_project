@@ -150,14 +150,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                       ),
                       onPressed: () {
-                        print('***********');
-                        print(nameController.text);
-                        print(emailController.text);
-                        print(passwordController.text);
-                        print(phoneController.text);
-
                         if (_formKey.currentState!.validate()) {
-                          print('========');
                           // Proceed with form submission
                           signUp(
                             nameController.text,
