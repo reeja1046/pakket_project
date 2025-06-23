@@ -10,7 +10,7 @@ Future<List<Product>> fetchTrendingProducts() async {
   final response = await http.get(
     Uri.parse('https://pakket-dev.vercel.app/api/app/product/trending?limit=1'),
     headers: {
-      'Authorization': 'Bearer $token', // 👈 Using the saved token here
+      'Authorization': 'Bearer $token',
       'Content-Type': 'application/json',
     },
   );
@@ -23,4 +23,3 @@ Future<List<Product>> fetchTrendingProducts() async {
     throw Exception('Failed to load trending products: ${response.body}');
   }
 }
-

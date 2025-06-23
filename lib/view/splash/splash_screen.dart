@@ -46,6 +46,7 @@ class _SplashScreenState extends State<SplashScreen> {
               'assets/logo_text.png',
               errorBuilder: (_, __, ___) => const Icon(Icons.image), // Fallback
             ),
+          
           ],
         ),
       ),

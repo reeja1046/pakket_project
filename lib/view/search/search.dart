@@ -1,10 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:pakket/controller/product.dart';
 import 'package:pakket/core/constants/color.dart';
-import 'package:pakket/model/product.dart';
-import 'package:pakket/view/product/productdetails.dart';
+import 'package:pakket/view/search/widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SearchDetails extends StatefulWidget {
@@ -15,14 +13,14 @@ class SearchDetails extends StatefulWidget {
 }
 
 class _SearchDetailsState extends State<SearchDetails> {
-  final TextEditingController _searchController = TextEditingController();
+  final TextEditingController searchController = TextEditingController();
   List<dynamic> searchResults = [];
   bool isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    fetchAllProducts();
+    _fetchAllProducts();
   }
 
   Future<String> _getToken() async {
@@ -30,9 +28,10 @@ class _SearchDetailsState extends State<SearchDetails> {
     return prefs.getString('token') ?? '';
   }
 
-  Future<void> fetchAllProducts() async {
+  Future<void> _fetchAllProducts() async {
     setState(() => isLoading = true);
     final token = await _getToken();
+
     try {
       final response = await http.get(
         Uri.parse('https://pakket-dev.vercel.app/api/app/product'),
@@ -46,15 +45,16 @@ class _SearchDetailsState extends State<SearchDetails> {
     } catch (e) {
       debugPrint("Error: $e");
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
-  Future<void> searchProducts(String query) async {
-    setState(() => isLoading = true);
-    if (query.isEmpty) return fetchAllProducts();
+  Future<void> _searchProducts(String query) async {
+    if (query.isEmpty) return _fetchAllProducts();
 
+    setState(() => isLoading = true);
     final token = await _getToken();
+
     try {
       final response = await http.get(
         Uri.parse(
@@ -69,102 +69,15 @@ class _SearchDetailsState extends State<SearchDetails> {
     } catch (e) {
       debugPrint("Search error: $e");
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
-  Widget _buildProductCard(dynamic product) {
-    final option = (product['options'] != null && product['options'].isNotEmpty)
-        ? product['options'][0]
-        : null;
-
-    return GestureDetector(
-      onTap: () async {
-        final detail = await fetchProductDetail(product['productId']);
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => ProductDetails(details: detail)),
-        );
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: CustomColors.textformfield,
-        ),
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: CustomColors.baseContainer,
-              ),
-              padding: const EdgeInsets.all(10),
-              child: Image.network(
-                product['thumbnail'] ?? '',
-                height: 80,
-                width: double.infinity,
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.image_not_supported),
-              ),
-            ),
-            Text(
-              product['title'] ?? 'No title',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            ),
-            const Divider(indent: 10, endIndent: 10),
-            IntrinsicHeight(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Text(
-                    option?['unit'] ?? '',
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  const VerticalDivider(),
-                  Text(
-                    'Rs. ${option?['basePrice'] ?? ''}',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 5),
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.04,
-              width: MediaQuery.of(context).size.width * 0.3,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: CustomColors.baseColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                ),
-                onPressed: () {},
-                child: Text(
-                  (product['options']?.length ?? 0) == 1
-                      ? 'Add'
-                      : '${product['options'].length} options',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    searchController.clear();
   }
 
   @override
@@ -189,15 +102,14 @@ class _SearchDetailsState extends State<SearchDetails> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Search Bar
               Row(
                 children: [
                   Expanded(
                     child: SizedBox(
                       height: 45,
                       child: TextFormField(
-                        controller: _searchController,
-                        onChanged: searchProducts,
+                        controller: searchController,
+                        onChanged: _searchProducts,
                         textAlignVertical: TextAlignVertical.center,
                         decoration: InputDecoration(
                           hintText: 'Search',
@@ -235,7 +147,7 @@ class _SearchDetailsState extends State<SearchDetails> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: IconButton(
-                      onPressed: () => searchProducts(_searchController.text),
+                      onPressed: () => _searchProducts(searchController.text),
                       icon: Image.asset('assets/home/setting-4.png'),
                       padding: EdgeInsets.zero,
                     ),
@@ -261,7 +173,8 @@ class _SearchDetailsState extends State<SearchDetails> {
                           mainAxisSpacing: 12,
                           childAspectRatio: 0.7,
                         ),
-                    itemBuilder: (_, i) => _buildProductCard(searchResults[i]),
+                    itemBuilder: (_, i) =>
+                        buildProductCard(searchResults[i], context),
                   ),
                 ),
             ],

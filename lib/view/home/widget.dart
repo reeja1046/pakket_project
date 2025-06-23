@@ -7,7 +7,7 @@ import 'package:pakket/model/herobanner.dart';
 import 'package:pakket/model/trending.dart';
 import 'package:pakket/view/product/productdetails.dart';
 
-Widget buildHeader(BuildContext context) {
+Widget buildHeader(BuildContext context, currentAddress1, currentAddress2) {
   final height = MediaQuery.of(context).size.height;
 
   return Column(
@@ -31,16 +31,34 @@ Widget buildHeader(BuildContext context) {
         'Your Location',
         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
       ),
+
       Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'PVS Green Valley, Chalakunnu, Kannur',
-            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                currentAddress1,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+              ),
+              Text(
+                currentAddress2,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+              ),
+            ],
           ),
           const SizedBox(width: 5),
           Image.asset('assets/home/location.png', color: Colors.black),
         ],
       ),
+
       const SizedBox(height: 10),
     ],
   );
@@ -141,7 +159,7 @@ Widget buildProductGrid(List<CategoryProduct> products) {
       crossAxisCount: 4,
       mainAxisSpacing: 10,
       crossAxisSpacing: 10,
-      childAspectRatio: 0.55,
+      childAspectRatio: 0.62,
     ),
     padding: const EdgeInsets.all(14),
     itemBuilder: (context, index) {

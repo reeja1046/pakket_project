@@ -3,6 +3,7 @@ import 'package:pakket/core/constants/appbar.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/model/allcategory.dart';
 import 'package:pakket/controller/category.dart';
+import 'package:pakket/view/product/productdetails.dart';
 
 class AllGroceryItems extends StatefulWidget {
   const AllGroceryItems({super.key});
@@ -218,6 +219,12 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
                                     ),
                                     onPressed: () {
                                       // TODO: Handle Add to cart
+                                      // Navigator.of(context).push(
+                                      //   MaterialPageRoute(
+                                      //     builder: (context) =>
+                                      //         ProductDetails(details: product),
+                                      //   ),
+                                      // );
                                     },
                                     child: const Text(
                                       'Add',

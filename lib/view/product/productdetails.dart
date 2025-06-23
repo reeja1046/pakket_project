@@ -545,23 +545,19 @@ class _ProductDetailsState extends State<ProductDetails> {
             ),
             TextButton(
               onPressed: () async {
-                print('!!!!!!!!!!!!!!!!!!!');
                 bool anyAdded = false;
 
                 for (int i = 0; i < widget.details.options.length; i++) {
                   final qty = quantities[i];
                   if (qty > 0) {
                     final option = widget.details.options[i];
-                    print(option.id);
                     final response = await addToCart(
                       itemId: widget.details.id,
                       optionId: option.id,
                       quantity: qty,
                     );
-                
 
                     if (response != null && response.success) {
-                   
                       anyAdded = true;
                     } else {
                       // Show error if one item fails (optional)
@@ -581,7 +577,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                         content: Text('Added to cart successfully!'),
                       ),
                     );
-                    print('added successfully');
+                    print('suuccess');
                     // Optionally navigate to checkout
                     Navigator.of(
                       context,

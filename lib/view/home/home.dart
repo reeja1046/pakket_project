@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:pakket/controller/category.dart';
 import 'package:pakket/controller/randomproduct.dart';
 import 'package:pakket/controller/trending.dart';
@@ -21,10 +23,14 @@ class _HomeScreenState extends State<HomeScreen> {
   late Future<List<Category>> _categoriesFuture;
   late Future<List<CategoryProduct>> _selectedCategoryProducts;
   late Future<List<Product>> _trendingProducts;
+  String currentAddressLine1 = 'Fetching location...';
+  String currentAddressLine2 = '';
 
   @override
   void initState() {
+    getCurrentLocation();
     super.initState();
+
     _trendingProducts = fetchTrendingProducts();
     _categoriesFuture = fetchCategories();
     _categoriesFuture.then((categories) {
@@ -32,6 +38,65 @@ class _HomeScreenState extends State<HomeScreen> {
         _setSelectedCategory(categories[selectedCategoryIndex]);
       }
     });
+  }
+
+  Future<void> getCurrentLocation() async {
+    try {
+      Position position = await _determinePosition();
+      // await _getAddressFromLatLng(position);
+      double lat = position.latitude;
+      double lon = position.longitude;
+      print(lat);
+      print(lon);
+      print('************');
+      List<Placemark> placemarks = await placemarkFromCoordinates(lat, lon);
+
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks[0];
+
+        String addressLine1 = place.name ?? '';
+        String addressLine2 =
+            '${place.locality ?? ''}, ${place.administrativeArea ?? ''}';
+
+        setState(() {
+          currentAddressLine1 = addressLine1;
+          currentAddressLine2 = addressLine2;
+
+          print('Line 1: $currentAddressLine1');
+          print('Line 2: $currentAddressLine2');
+        });
+      }
+    } catch (e) {
+      setState(() {
+        currentAddressLine1 = 'Failed to get location: $e';
+      });
+    }
+  }
+
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied.');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+        'Location permissions are permanently denied, we cannot request permissions.',
+      );
+    }
+
+    return await Geolocator.getCurrentPosition();
   }
 
   void _setSelectedCategory(Category category) {
@@ -69,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 14.0),
-                      child: buildHeader(context),
+                      child: buildHeader(context, currentAddressLine1,currentAddressLine2),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 14.0),
@@ -271,7 +336,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
               showTrendingProduct(_trendingProducts),
             ],
           ),

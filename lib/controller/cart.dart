@@ -26,10 +26,7 @@ Future<CartResponseModel?> addToCart({
     final response = await http.post(url, headers: headers, body: body);
 
     if (response.statusCode == 200) {
-      print(response.body);
-      print('[[[[]]]]');
       final json = jsonDecode(response.body);
-      print(json);
       return CartResponseModel.fromJson(json);
     } else {
       print('Errorponse.statusCode}sponse');
@@ -42,7 +39,6 @@ Future<CartResponseModel?> addToCart({
 }
 
 Future<List<CartItemModel>> getCart() async {
-  print('called getCart function');
   final url = Uri.parse('https://pakket-dev.vercel.app/api/app/cart');
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('token') ?? '';
