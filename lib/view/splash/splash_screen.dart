@@ -34,20 +34,22 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildLogo(),
-            const SizedBox(height: 40),
-            _buildSplashImage(),
-            const SizedBox(height: 40),
-            Image.asset(
-              'assets/logo_text.png',
-              errorBuilder: (_, __, ___) => const Icon(Icons.image), // Fallback
-            ),
-          
-          ],
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildLogo(),
+              const SizedBox(height: 40),
+              _buildSplashImage(),
+              const SizedBox(height: 40),
+              Image.asset(
+                'assets/logo_text.png',
+                errorBuilder: (_, __, ___) => const Icon(Icons.image), // Fallback
+              ),
+            
+            ],
+          ),
         ),
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:pakket/controller/herobanner.dart';
 import 'package:pakket/controller/product.dart';
 import 'package:pakket/core/constants/color.dart';
@@ -6,6 +7,7 @@ import 'package:pakket/model/allcategory.dart';
 import 'package:pakket/model/herobanner.dart';
 import 'package:pakket/model/trending.dart';
 import 'package:pakket/view/product/productdetails.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 Widget buildHeader(BuildContext context, currentAddress1, currentAddress2) {
   final height = MediaQuery.of(context).size.height;
@@ -166,11 +168,11 @@ Widget buildProductGrid(List<CategoryProduct> products) {
       final product = displayProducts[index];
       return GestureDetector(
         onTap: () async {
-          final productDetail = await fetchProductDetail(product.productId);
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ProductDetails(details: productDetail),
+              builder: (context) =>
+                  ProductDetails(productId: product.productId),
             ),
           );
         },
@@ -254,14 +256,11 @@ Widget showTrendingProduct(Future<List<Product>> trendingProducts) {
                     padding: const EdgeInsets.only(left: 14.0),
                     child: GestureDetector(
                       onTap: () async {
-                        final productDetail = await fetchProductDetail(
-                          product.id,
-                        );
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) =>
-                                ProductDetails(details: productDetail),
+                                ProductDetails(productId: product.id),
                           ),
                         );
                       },
@@ -356,4 +355,38 @@ Widget showTrendingProduct(Future<List<Product>> trendingProducts) {
       );
     },
   );
+}
+
+Future<Position> determinePosition() async {
+  bool serviceEnabled;
+  LocationPermission permission;
+
+  serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  if (!serviceEnabled) {
+    return Future.error('Location services are disabled.');
+  }
+
+  permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied) {
+      return Future.error('Location permissions are denied.');
+    }
+  }
+
+  if (permission == LocationPermission.deniedForever) {
+    return Future.error(
+      'Location permissions are permanently denied, we cannot request permissions.',
+    );
+  }
+
+  return await Geolocator.getCurrentPosition();
+}
+
+Future<void> saveLocation(double lat, double lon) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setDouble('latitude', lat);
+  await prefs.setDouble('longitude', lon);
+  print(lon);
+  print(lat);
 }

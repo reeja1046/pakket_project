@@ -1,6 +1,8 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:pakket/model/cart.dart';
+import 'package:pakket/model/cartadding.dart';
+import 'package:pakket/model/cartfetching.dart';
 import 'package:pakket/model/product.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -24,9 +26,12 @@ Future<CartResponseModel?> addToCart({
 
   try {
     final response = await http.post(url, headers: headers, body: body);
-
+    print(response.statusCode);
+    print(response.body);
+    print('------------------=============------------');
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
+      print(json);
       return CartResponseModel.fromJson(json);
     } else {
       print('Errorponse.statusCode}sponse');
@@ -38,7 +43,7 @@ Future<CartResponseModel?> addToCart({
   }
 }
 
-Future<List<CartItemModel>> getCart() async {
+Future<List<CartItemModelFetching>> getCart() async {
   final url = Uri.parse('https://pakket-dev.vercel.app/api/app/cart');
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('token') ?? '';
@@ -52,14 +57,9 @@ Future<List<CartItemModel>> getCart() async {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      final List items = data['cart'];
 
-      final List items = data['cart']; // ✅ fix here
-      print('............................ssssssssssssssssssssssssssssss');
-      print(data['cart']);
-      print('............................ssssssssssssssssssssssssssssss');
-      print(items.map((e) => CartItemModel.fromJson(e).productId));
-      print('............................ssssssssssssssssssssssssssssss');
-      return items.map((e) => CartItemModel.fromJson(e)).toList();
+      return items.map((e) => CartItemModelFetching.fromJson(e)).toList();
     } else {
       print('Error ${response.statusCode}: ${response.body}');
       return [];
@@ -79,9 +79,6 @@ Future<void> enrichCartItems(List<CartItemModel> items) async {
 
     if (res.statusCode == 200) {
       final data = jsonDecode(res.body);
-      print('*********----------------************************------------');
-      print(data);
-      print('*********----------------************************------------');
       final product = ProductDetail.fromJson(data['product']);
 
       final matchedOption = product.options.firstWhere(
@@ -95,5 +92,81 @@ Future<void> enrichCartItems(List<CartItemModel> items) async {
       item.unit = matchedOption.unit;
       item.offerPrice = matchedOption.offerPrice;
     }
+  }
+}
+
+Future<bool> deleteCartItem(String itemId, BuildContext context) async {
+  final url = Uri.parse(
+    'https://pakket-dev.vercel.app/api/app/cart?itemId=$itemId',
+  );
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token') ?? '';
+
+  try {
+    final response = await http.delete(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && data['success'] == true) {
+      return true;
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(data['message'] ?? 'Failed to delete item')),
+      );
+      return false;
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    return false;
+  }
+}
+
+Future<bool> updateCartItemQuantity(
+  String itemId,
+  String operation,
+  BuildContext context,
+) async {
+  final url = Uri.parse('https://pakket-dev.vercel.app/api/app/cart');
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token') ?? '';
+
+  try {
+    final response = await http.patch(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        "itemId": itemId,
+        "operation": operation, // 'inc' or 'dec'
+      }),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && data['success'] == true) {
+      return true; // Successfully updated
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(data['message'] ?? 'Failed to update cart item'),
+        ),
+      );
+      return false;
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Error: $e')));
+    return false;
   }
 }

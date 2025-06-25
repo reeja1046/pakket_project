@@ -13,16 +13,7 @@ class BottomNavScreen extends StatefulWidget {
 
 class _BottomNavScreenState extends State<BottomNavScreen> {
   int _selectedIndex = 0;
-
-  final List<Widget> _screens = [
-    HomeScreen(),
-    WishlistScreen(),
-
-    CheckoutPage(),
-    OrderScreen(),
-  ];
-
-  void _onItemTapped(int index) {
+  void onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
@@ -30,11 +21,18 @@ class _BottomNavScreenState extends State<BottomNavScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> _screens = [
+      HomeScreen(),
+      WishlistScreen(),
+      CheckoutPage(fromBottomNav: true, onBack: () => onItemTapped(0)),
+
+      OrderScreen(fromBottomNav: true, onBack: () => onItemTapped(0)),
+    ];
     return Scaffold(
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+        onTap: onItemTapped,
         type: BottomNavigationBarType.fixed,
         showSelectedLabels: false,
         showUnselectedLabels: false,

@@ -15,13 +15,10 @@ Widget buildProductCard(
 
   return GestureDetector(
     onTap: () async {
-      final detail = await fetchProductDetail(productId);
-     
-
-      if (context.mounted) {
+    if (context.mounted) {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => ProductDetails(details: detail)),
+          MaterialPageRoute(builder: (_) => ProductDetails(productId:  productId)),
         );
       }
     },

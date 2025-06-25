@@ -2,18 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:pakket/controller/order.dart';
 import 'package:pakket/controller/orderdetails.dart';
 import 'package:pakket/core/constants/color.dart';
-import 'package:pakket/model/order.dart';
+import 'package:pakket/model/orderfetch.dart';
 
 class OrderScreen extends StatefulWidget {
-  OrderScreen({super.key});
+  final bool fromBottomNav;
+  final VoidCallback? onBack;
+
+  const OrderScreen({super.key, this.fromBottomNav = false, this.onBack});
 
   @override
   State<OrderScreen> createState() => _OrderScreenState();
 }
 
 class _OrderScreenState extends State<OrderScreen> {
-  final Future<List<Order>> _ordersFuture = fetchOrders();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,13 +27,23 @@ class _OrderScreenState extends State<OrderScreen> {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (widget.fromBottomNav) {
+              // If opened from bottom nav, switch tabs
+              if (widget.onBack != null) {
+                widget.onBack!();
+              }
+            } else {
+              // If opened from product flow, pop the navigation stack
+              Navigator.pop(context);
+            }
+          },
           icon: Icon(Icons.arrow_back_ios),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: SafeArea(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -54,7 +65,7 @@ class _OrderScreenState extends State<OrderScreen> {
               SizedBox(height: 10),
               Expanded(
                 child: FutureBuilder<List<Order>>(
-                  future: _ordersFuture,
+                  future: fetchOrders(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Center(child: CircularProgressIndicator());
@@ -120,6 +131,7 @@ class _OrderScreenState extends State<OrderScreen> {
               );
             } else {
               final order = snapshot.data!;
+              print(order);
               return Padding(
                 padding: const EdgeInsets.all(16),
                 child: SingleChildScrollView(

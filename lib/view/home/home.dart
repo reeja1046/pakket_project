@@ -42,15 +42,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> getCurrentLocation() async {
     try {
-      Position position = await _determinePosition();
+      Position position = await determinePosition();
       // await _getAddressFromLatLng(position);
       double lat = position.latitude;
       double lon = position.longitude;
-      print(lat);
-      print(lon);
-      print('************');
       List<Placemark> placemarks = await placemarkFromCoordinates(lat, lon);
-
+      saveLocation(lat, lon);
       if (placemarks.isNotEmpty) {
         Placemark place = placemarks[0];
 
@@ -61,9 +58,6 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           currentAddressLine1 = addressLine1;
           currentAddressLine2 = addressLine2;
-
-          print('Line 1: $currentAddressLine1');
-          print('Line 2: $currentAddressLine2');
         });
       }
     } catch (e) {
@@ -71,32 +65,6 @@ class _HomeScreenState extends State<HomeScreen> {
         currentAddressLine1 = 'Failed to get location: $e';
       });
     }
-  }
-
-  Future<Position> _determinePosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return Future.error('Location services are disabled.');
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied.');
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      return Future.error(
-        'Location permissions are permanently denied, we cannot request permissions.',
-      );
-    }
-
-    return await Geolocator.getCurrentPosition();
   }
 
   void _setSelectedCategory(Category category) {
@@ -134,7 +102,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 14.0),
-                      child: buildHeader(context, currentAddressLine1,currentAddressLine2),
+                      child: buildHeader(
+                        context,
+                        currentAddressLine1,
+                        currentAddressLine2,
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 14.0),

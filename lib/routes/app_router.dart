@@ -23,12 +23,12 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const SignUpScreen());
       case AppRoutes.signin:
         return MaterialPageRoute(builder: (_) => const SignInScreen());
-      case AppRoutes.passwordreset:
-        return MaterialPageRoute(builder: (_) => const PasswordReset());
+      // case AppRoutes.passwordreset:
+      //   return MaterialPageRoute(builder: (_) =>  PasswordReset());
       case AppRoutes.home:
         return MaterialPageRoute(builder: (_) => const HomeScreen());
       case AppRoutes.profile:
-        return MaterialPageRoute(builder: (_) => const ProfileScreen());
+        return MaterialPageRoute(builder: (_) => ProfileScreen());
       case AppRoutes.search:
         return MaterialPageRoute(builder: (_) => const SearchDetails());
       // case AppRoutes.productdetail:

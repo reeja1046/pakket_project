@@ -64,36 +64,38 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final height = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      body: Stack(
-        children: [
-          Column(
-            children: [
-              SizedBox(height: height * 0.1),
-              _buildSkipButton(),
-              SizedBox(
-                height: height * 0.74,
-                width: double.infinity,
-                child: Image.asset(
-                  'assets/splash/grocery.png',
-                  fit: BoxFit.cover,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Column(
+              children: [
+                SizedBox(height: height * 0.05),
+                _buildSkipButton(),
+                SizedBox(
+                  height: height * 0.74,
+                  width: double.infinity,
+                  child: Image.asset(
+                    'assets/splash/grocery.png',
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              ),
-              SizedBox(),
-            ],
-          ),
-          Positioned(
-            bottom: 30,
-            left: 15,
-            right: 15,
-            child: SvgPicture.asset('assets/splash/rectangle.svg'),
-          ),
-          Positioned(
-            bottom: 45,
-            left: 15,
-            right: 15,
-            child: _buildBottomContent(),
-          ),
-        ],
+                SizedBox(),
+              ],
+            ),
+            Positioned(
+              bottom: 30,
+              left: 15,
+              right: 15,
+              child: SvgPicture.asset('assets/splash/rectangle.svg'),
+            ),
+            Positioned(
+              bottom: 45,
+              left: 15,
+              right: 15,
+              child: _buildBottomContent(),
+            ),
+          ],
+        ),
       ),
     );
   }
