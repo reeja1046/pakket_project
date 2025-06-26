@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/view/auth/widget.dart';
+import 'package:pakket/view/widget/snackbar.dart';
 import 'package:pinput/pinput.dart';
 
 class PasswordReset extends StatefulWidget {
@@ -30,16 +31,13 @@ class _PasswordResetState extends State<PasswordReset> {
     String newPassword = passwordController.text.trim();
 
     if (otp.length < 6) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Enter the complete 6-digit OTP')));
+      showSuccessSnackbar(context, 'Enter the complete 6-digit OTP');
       return;
     }
 
     if (newPassword.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Password must be at least 6 characters')),
-      );
+      showSuccessSnackbar(context, 'Password must be at least 6 characters');
+
       return;
     }
 
@@ -63,24 +61,18 @@ class _PasswordResetState extends State<PasswordReset> {
       final resetData = jsonDecode(resetResponse.body);
 
       if (resetResponse.statusCode == 200 && resetData['success'] == true) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Password reset successful')));
+        showSuccessSnackbar(context, 'Password reset successful');
         Navigator.of(
           context,
         ).pushNamedAndRemoveUntil('/signin', (route) => false);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(resetData['message'] ?? 'Password reset failed'),
-          ),
+        showSuccessSnackbar(
+          context,
+          resetData['message'] ?? 'Password reset failed',
         );
       }
     } catch (e) {
-      print(e.toString());
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+      showSuccessSnackbar(context, 'Error: ${e.toString()}');
     } finally {
       setState(() {
         isLoading = false;
@@ -150,6 +142,7 @@ class _PasswordResetState extends State<PasswordReset> {
                       ),
                     ),
                   ),
+                  keyboardType: TextInputType.number,
                   // androidSmsAutofillMethod:
                   //     AndroidSmsAutofillMethod.smsRetrieverApi,
                   showCursor: true,
@@ -162,8 +155,8 @@ class _PasswordResetState extends State<PasswordReset> {
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Please enter your password';
-                    } else if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
+                    } else if (value.length < 8) {
+                      return 'Password must be at least 8 characters';
                     }
                     return null;
                   },

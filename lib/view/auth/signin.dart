@@ -41,7 +41,7 @@ class _SignInScreenState extends State<SignInScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(height: size.height * 0.2),
+                SizedBox(height: size.height * 0.08),
 
                 SizedBox(
                   height: size.height * 0.15,
@@ -64,6 +64,7 @@ class _SignInScreenState extends State<SignInScreen> {
                 SizedBox(height: size.height * 0.04),
 
                 CustomTextField(
+                  keyboardtype: TextInputType.phone,
                   hint: "WhatsApp no.",
                   controller: phoneController,
                   validator: (value) {
@@ -97,8 +98,8 @@ class _SignInScreenState extends State<SignInScreen> {
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Please enter your password';
-                    } else if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
+                    } else if (value.length < 8) {
+                      return 'Password must be at least 8 characters';
                     }
                     return null;
                   },

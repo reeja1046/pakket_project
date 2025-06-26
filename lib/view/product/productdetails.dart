@@ -9,6 +9,7 @@ import 'package:pakket/model/product.dart';
 import 'package:pakket/model/trending.dart';
 import 'package:pakket/view/checkout/checkout.dart';
 import 'package:pakket/view/product/widget.dart';
+import 'package:pakket/view/widget/modal.dart';
 
 class ProductDetails extends StatefulWidget {
   final String productId;
@@ -354,30 +355,7 @@ class _ProductDetailsState extends State<ProductDetails> {
         ),
         GestureDetector(
           onTap: () {
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              backgroundColor: Colors.transparent,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-              ),
-              builder: (context) {
-                return Container(
-                  decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(20),
-                    ),
-                    gradient: LinearGradient(
-                      colors: [Color(0xFFE9ECDB), Color(0xFFE8EBD5)],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      stops: [0.94, 1.0],
-                    ),
-                  ),
-                  child: _buildOptionBottomSheet(product),
-                );
-              },
-            );
+            showProductOptionBottomSheet(context: context, product: product);
           },
           child: Container(
             height: 30,
@@ -386,29 +364,37 @@ class _ProductDetailsState extends State<ProductDetails> {
               borderRadius: BorderRadius.circular(6),
               color: CustomColors.baseColor,
             ),
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '${product.options.length} options',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
+            child: Container(
+              height: 30,
+              width: 100,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6),
+                color: CustomColors.baseColor,
+              ),
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${product.options.length} options',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    Transform.rotate(
-                      angle: 1.57,
-                      child: const Icon(
-                        Icons.arrow_forward_ios,
-                        color: Colors.white,
-                        size: 16,
+                      const SizedBox(width: 4),
+                      Transform.rotate(
+                        angle: 1.57,
+                        child: const Icon(
+                          Icons.arrow_forward_ios,
+                          color: Colors.white,
+                          size: 16,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

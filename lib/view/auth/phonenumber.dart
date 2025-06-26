@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/view/auth/password_reset.dart';
 import 'package:pakket/view/auth/widget.dart';
+import 'package:pakket/view/widget/snackbar.dart';
 
 class PhoneNumberScreen extends StatefulWidget {
   const PhoneNumberScreen({super.key});
@@ -26,9 +27,8 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
     String phone = phoneController.text.trim();
 
     if (phone.isEmpty || phone.length < 10) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter a valid phone number')),
-      );
+      showSuccessSnackbar(context, 'Please enter a valid phone number');
+
       return;
     }
 
@@ -53,14 +53,10 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
           MaterialPageRoute(builder: (context) => PasswordReset(phone: phone)),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['message'] ?? 'Failed to send OTP')),
-        );
+        showSuccessSnackbar(context, data['message'] ?? 'Failed to send OTP');
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}')));
+      showSuccessSnackbar(context, 'Error: ${e.toString()}');
     } finally {
       setState(() {
         isLoading = false;
@@ -105,6 +101,7 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
                 ),
                 SizedBox(height: size.height * 0.03),
                 CustomTextField(
+                  keyboardtype: TextInputType.phone,
                   hint: "Phone number",
                   controller: phoneController,
                   validator: (value) {

@@ -267,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           selectedCategoryName,
                           () => Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => const AllGroceryItems(),
+                              builder: (context) =>  AllGroceryItems(title:selectedCategoryName),
                             ),
                           ),
                         ),

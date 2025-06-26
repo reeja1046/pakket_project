@@ -6,6 +6,7 @@ class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
   final String? Function(String?) validator;
   final bool isPassword;
+  final TextInputType? keyboardtype;
   final bool isPasswordVisible;
   final VoidCallback? onVisibilityToggle;
   final Widget? suffixIcon;
@@ -14,6 +15,7 @@ class CustomTextField extends StatelessWidget {
     required this.hint,
     required this.controller,
     required this.validator,
+    this.keyboardtype,
     this.isPassword = false,
     this.isPasswordVisible = false,
     this.onVisibilityToggle,
@@ -25,6 +27,7 @@ class CustomTextField extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: TextFormField(
+        keyboardType: keyboardtype,
         controller: controller,
         obscureText: isPassword ? !isPasswordVisible : false,
         validator: validator,

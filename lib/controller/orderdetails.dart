@@ -1,4 +1,4 @@
-import 'package:pakket/controller/order.dart';
+import 'package:pakket/model/order.dart';
 import 'package:pakket/model/orderfetch.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;

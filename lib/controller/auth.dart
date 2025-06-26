@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/view/widget/bottomnavbar.dart';
+import 'package:pakket/view/widget/snackbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<void> signUp(
@@ -34,39 +35,14 @@ Future<void> signUp(
       await prefs.setString('token', token);
       _showBlurDialog(context);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: CustomColors.baseColor,
-          content: Text(
-            'Signup failed',
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          behavior: SnackBarBehavior.floating,
-          elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      );
+      if (data['message'] == 'Phone number already exists.') {
+        showSuccessSnackbar(context, data['message']);
+      } else {
+        showSuccessSnackbar(context, data['error']);
+      }
     }
   } catch (e) {
-    print('Signup error: $e');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: CustomColors.baseColor,
-        content: Text(
-          'Something went wrong. Please try again',
-          style: GoogleFonts.poppins(
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        behavior: SnackBarBehavior.floating,
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    );
+    showSuccessSnackbar(context, 'Something went wrong. Please try again');
   }
 }
 
@@ -124,7 +100,7 @@ void _showBlurDialog(BuildContext context) {
                     Text(
                       'Account created\nsuccessfully!',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         color: Colors.white,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -134,7 +110,7 @@ void _showBlurDialog(BuildContext context) {
                     Text(
                       'You have successfully created an account with us! Get ready for a great shopping experience',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(color: Colors.black),
+                      style: TextStyle(color: Colors.black),
                     ),
                     const SizedBox(height: 60),
                   ],
@@ -166,6 +142,8 @@ Future<void> login(String phone, String password, BuildContext context) async {
         // ✅ Save token
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', token);
+        //show success snackbar
+        showSuccessSnackbar(context, 'Login successful! Welcome back.');
 
         // ✅ Navigate to Home
         Navigator.pushReplacement(
@@ -173,49 +151,15 @@ Future<void> login(String phone, String password, BuildContext context) async {
           MaterialPageRoute(builder: (context) => BottomNavScreen()),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Token not found in response")),
-        );
+        //show failed snackbar
+        showSuccessSnackbar(context, 'Token is not provided');
       }
     } else {
-      // ❌ Show detailed error
-      String errorMessage = data['message'] ?? 'Login failed';
-
-      if (data['error'] != null && data['error'] is List) {
-        errorMessage += "\n• " + (data['error'] as List).join("\n• ");
-      }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: CustomColors.baseColor,
-          content: Text(
-            'Invalid user data',
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          behavior: SnackBarBehavior.floating,
-          elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-      );
+      print(response.body);
+      //show failed snackbar
+      showSuccessSnackbar(context, data['message']);
     }
   } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: CustomColors.baseColor,
-        content: Text(
-          'An error occurred. Please try again.',
-          style: GoogleFonts.poppins(
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        behavior: SnackBarBehavior.floating,
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    );
+    showSuccessSnackbar(context, 'An error occurred. Please try again.');
   }
 }

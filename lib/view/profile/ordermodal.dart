@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pakket/controller/order.dart';
+import 'package:pakket/model/order.dart';
 import 'package:pakket/controller/orderdetails.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/model/orderfetch.dart';

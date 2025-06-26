@@ -106,6 +106,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           },
                         ),
                         CustomTextField(
+                          keyboardtype: TextInputType.phone,
                           hint: "Whatsapp no.",
                           controller: phoneController,
                           suffixIcon: Padding(
@@ -134,8 +135,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             if (value!.isEmpty) {
                               return "Please create a password";
                             }
-                            if (value.length < 6) {
-                              return "Password must be at least 6 characters";
+                            if (value.length < 8) {
+                              return "Password must be at least 8 characters";
                             }
                             return null;
                           },

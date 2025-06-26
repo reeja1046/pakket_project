@@ -19,15 +19,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       'title': 'Buy Groceries Easily\nwith Us',
       'description':
           'It is a long established fact that a reader\nwill be distracted by the readable',
+      'image': 'assets/splash/grocery.png',
     },
     {
-      'title': 'Get Fresh Fruits and\nVegetables',
-      'description': 'Order fresh fruits and vegetables\nat your convenience.',
-    },
-    {
-      'title': 'Fast & Secure Delivery',
+      'title': 'Fresh Fruits & Vegetables\nDelivered Daily',
       'description':
-          'Your groceries delivered on time\nwith safe payment options.',
+          'Get farm-fresh fruits and vegetables\ndelivered to your doorstep.',
+      'image': 'assets/splash/veg-splash.png',
+    },
+    {
+      'title': 'Quick & Secure Delivery\nfor Non-Veg Items',
+      'description':
+          'Order fresh meat and seafood\nwith safe and fast delivery.',
+      'image': 'assets/splash/nonveg-splash.png',
     },
   ];
 
@@ -75,10 +79,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   height: height * 0.74,
                   width: double.infinity,
                   child: Image.asset(
-                    'assets/splash/grocery.png',
+                    _onboardingData[_currentPage]['image']!,
                     fit: BoxFit.cover,
                   ),
                 ),
+
                 SizedBox(),
               ],
             ),

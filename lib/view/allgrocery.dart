@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:pakket/controller/product.dart';
 import 'package:pakket/controller/randomproduct.dart';
-import 'package:pakket/core/constants/appbar.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/model/allcategory.dart';
 import 'package:pakket/controller/category.dart';
 import 'package:pakket/view/product/productdetails.dart';
 import 'package:pakket/view/search/search.dart';
+import 'package:pakket/view/widget/modal.dart';
 
 class AllGroceryItems extends StatefulWidget {
-  const AllGroceryItems({super.key});
+  final String title;
+  AllGroceryItems({super.key, required this.title});
 
   @override
   State<AllGroceryItems> createState() => _AllGroceryItemsState();
@@ -21,22 +23,36 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
   List<CategoryProduct> products = [];
   String? selectedCategoryId;
   bool isLoading = true;
-  String selectedCategoryName = 'All grocery items';
+  late String selectedCategoryName;
 
   @override
   void initState() {
     super.initState();
     fetchInitialData();
+    selectedCategoryName = widget.title;
   }
 
   Future<void> fetchInitialData() async {
     try {
       final fetchedCategories = await fetchCategories();
+      String? initialCategoryId;
+      String initialCategoryName = widget.title;
+
+      // Find the matching category by title
+      final matchingCategory = fetchedCategories.firstWhere(
+        (category) => category.name.toLowerCase() == widget.title.toLowerCase(),
+        orElse: () => fetchedCategories.first,
+      );
+
+      initialCategoryId = matchingCategory.id;
+      initialCategoryName = matchingCategory.name;
+
       setState(() {
         categories = fetchedCategories;
-        selectedCategoryId = fetchedCategories.first.id;
-        selectedCategoryName = fetchedCategories.first.name;
+        selectedCategoryId = initialCategoryId;
+        selectedCategoryName = initialCategoryName;
       });
+
       fetchProducts(selectedCategoryId!);
     } catch (e) {
       print('Error fetching categories: $e');
@@ -74,7 +90,7 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: Image.asset('assets/home/icon.png'),
             onPressed: () {
               Navigator.of(
                 context,
@@ -202,8 +218,9 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
                             onTap: () {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (context) =>
-                                      ProductDetails(productId: product.productId),
+                                  builder: (context) => ProductDetails(
+                                    productId: product.productId,
+                                  ),
                                 ),
                               );
                             },
@@ -278,14 +295,16 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
                                             ),
                                           ),
                                         ),
-                                        onPressed: () {
-                                          // TODO: Handle Add to cart
-                                          // Navigator.of(context).push(
-                                          //   MaterialPageRoute(
-                                          //     builder: (context) =>
-                                          //         ProductDetails(details: product),
-                                          //   ),
-                                          // );
+                                        onPressed: () async {
+                                          final productDetail =
+                                              await fetchProductDetail(
+                                                product.productId,
+                                              );
+                                          showProductOptionBottomSheet(
+                                            context: context,
+                                            product:
+                                                productDetail, // Make sure this is the correct ProductDetail object
+                                          );
                                         },
                                         child: const Text(
                                           'Add',
