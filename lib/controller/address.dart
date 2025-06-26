@@ -21,14 +21,16 @@ Future<Address?> addAddressApi(AddressRequest addressRequest) async {
     );
 
     print('Add Address Status: ${response.statusCode}');
+    print(response.body);
     if (response.statusCode == 201 || response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
+      //need to show address is deliverable
 
       // Assuming the API returns the newly created address object
       return Address.fromJson(responseData['address']);
     } else {
       print('Failed to add address: ${response.body}');
-      
+
       return null;
     }
   } catch (e) {

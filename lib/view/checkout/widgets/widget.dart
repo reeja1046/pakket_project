@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/view/order.dart';
 
-
 Widget priceRow(String label, String value, {bool bold = false}) {
   return Padding(
     padding: const EdgeInsets.symmetric(vertical: 4),
@@ -88,15 +87,30 @@ void showBlurDialog(BuildContext context) {
   );
 }
 
-Widget buildTextField(TextEditingController controller, String hint) {
+Widget buildTextField(
+  TextEditingController controller,
+  String hint, {
+  String? Function(String?)? validator,
+}) {
   return TextFormField(
     controller: controller,
     maxLines: 1,
+    validator: validator,
     decoration: InputDecoration(
       hintText: hint,
+      hintStyle: TextStyle(fontSize: 14),
       filled: true,
       fillColor: Colors.white,
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      border: _outlineBorder(),
+      enabledBorder: _outlineBorder(),
+      focusedBorder: _outlineBorder(width: 2.5),
     ),
+  );
+}
+
+OutlineInputBorder _outlineBorder({double width = 1}) {
+  return OutlineInputBorder(
+    borderRadius: BorderRadius.circular(8),
+    borderSide: BorderSide(color: CustomColors.baseColor, width: width),
   );
 }

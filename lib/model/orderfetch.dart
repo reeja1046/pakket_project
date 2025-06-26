@@ -29,7 +29,7 @@ class OrderDetail {
         json['items'].map((x) => OrderItem.fromJson(x)),
       ),
       totalPrice: (json['totalPrice'] as num).toDouble(),
-      deliveryCharge: (json['deliveryCharge'] as num).toDouble(),
+      deliveryCharge: 50,
       note: json['note'] ?? '',
     );
   }

@@ -170,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                     ),
-                    showScrollCard(),
+                    ScrollCardCarousel(),
                   ],
                 ),
               ),
@@ -265,9 +265,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: buildCategoryHeader(
                           context,
                           selectedCategoryName,
+                          'see All',
                           () => Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) =>  AllGroceryItems(title:selectedCategoryName),
+                              builder: (context) =>
+                                  AllGroceryItems(title: selectedCategoryName),
                             ),
                           ),
                         ),

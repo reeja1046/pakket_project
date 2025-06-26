@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:pakket/controller/herobanner.dart';
@@ -7,6 +9,7 @@ import 'package:pakket/model/allcategory.dart';
 import 'package:pakket/model/herobanner.dart';
 import 'package:pakket/model/trending.dart';
 import 'package:pakket/view/product/productdetails.dart';
+import 'package:pakket/view/widget/modal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Widget buildHeader(BuildContext context, currentAddress1, currentAddress2) {
@@ -66,63 +69,115 @@ Widget buildHeader(BuildContext context, currentAddress1, currentAddress2) {
   );
 }
 
-Widget showScrollCard() {
-  return FutureBuilder<List<HeroBanner>>(
-    future: fetchHeroBanners(),
-    builder: (context, snapshot) {
-      if (snapshot.connectionState == ConnectionState.waiting) {
-        return const SizedBox(
-          height: 240,
-          child: Center(child: CircularProgressIndicator()),
-        );
-      } else if (snapshot.hasError) {
-        return const SizedBox(
-          height: 240,
-          child: Center(child: Text('Failed to load banners')),
-        );
-      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-        return const SizedBox(
-          height: 240,
-          child: Center(child: Text('No banners available')),
-        );
-      }
-      return scrollCard(context, snapshot.data!);
-    },
-  );
+class ScrollCardCarousel extends StatefulWidget {
+  const ScrollCardCarousel({super.key});
+
+  @override
+  State<ScrollCardCarousel> createState() => _ScrollCardCarouselState();
 }
 
-Widget scrollCard(BuildContext context, List<HeroBanner> banners) {
-  final controller = PageController(initialPage: 1, viewportFraction: 0.85);
-  return SizedBox(
-    height: 240,
-    child: PageView.builder(
-      controller: controller,
-      itemCount: banners.length,
-      itemBuilder: (context, index) {
-        final banner = banners[index];
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              banner.url,
-              fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => const Icon(Icons.error),
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return const Center(child: CircularProgressIndicator());
-              },
-            ),
-          ),
+class _ScrollCardCarouselState extends State<ScrollCardCarousel> {
+  late PageController controller;
+  int currentIndex = 0;
+  Timer? timer;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = PageController(viewportFraction: 0.85);
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    timer?.cancel();
+    super.dispose();
+  }
+
+  void startAutoScroll(List<HeroBanner> banners) {
+    timer?.cancel();
+    timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (controller.hasClients) {
+        if (currentIndex < banners.length - 1) {
+          currentIndex++;
+        } else {
+          currentIndex = 0;
+        }
+        controller.animateToPage(
+          currentIndex,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
         );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<HeroBanner>>(
+      future: fetchHeroBanners(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            height: 240,
+            child: Center(child: CircularProgressIndicator()),
+          );
+        } else if (snapshot.hasError) {
+          return const SizedBox(
+            height: 240,
+            child: Center(child: Text('Failed to load banners')),
+          );
+        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const SizedBox(
+            height: 240,
+            child: Center(child: Text('No banners available')),
+          );
+        }
+
+        final banners = snapshot.data!;
+        startAutoScroll(banners);
+
+        return buildScrollCard(context, banners);
       },
-    ),
-  );
+    );
+  }
+
+  Widget buildScrollCard(BuildContext context, List<HeroBanner> banners) {
+    return SizedBox(
+      height: 240,
+      child: PageView.builder(
+        controller: controller,
+        itemCount: banners.length,
+        onPageChanged: (index) {
+          currentIndex = index;
+        },
+        itemBuilder: (context, index) {
+          final banner = banners[index];
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                banner.url,
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const Icon(Icons.error),
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(child: CircularProgressIndicator());
+                },
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 }
 
 Widget buildCategoryHeader(
   BuildContext context,
   String title,
+  String title2,
   VoidCallback onSeeAllPressed,
 ) {
   final screenWidth = MediaQuery.of(context).size.width;
@@ -139,7 +194,7 @@ Widget buildCategoryHeader(
       GestureDetector(
         onTap: onSeeAllPressed,
         child: Text(
-          'See All',
+          title2,
           style: TextStyle(
             fontSize: screenWidth * 0.035,
             color: Colors.orange,
@@ -242,7 +297,7 @@ Widget showTrendingProduct(Future<List<Product>> trendingProducts) {
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14.0),
-              child: buildCategoryHeader(context, 'Trending Offers', () {}),
+              child: buildCategoryHeader(context, 'Trending Offers', '', () {}),
             ),
             const SizedBox(height: 10),
             SingleChildScrollView(
@@ -316,26 +371,34 @@ Widget showTrendingProduct(Future<List<Product>> trendingProducts) {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  'Rs.${option.offerPrice.toStringAsFixed(2)}',
+                                  'Rs.${option.offerPrice.floor()}',
                                   style: TextStyle(
                                     fontSize: fontSize,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                Container(
-                                  width: 60,
+                                SizedBox(
                                   height: 30,
-                                  decoration: BoxDecoration(
-                                    color: CustomColors.baseColor,
-                                    borderRadius: BorderRadius.circular(7),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      'Add',
-                                      style: TextStyle(
-                                        fontSize: fontSize * 0.9,
-                                        color: Colors.white,
+                                  width: 80,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: CustomColors.baseColor,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(5),
                                       ),
+                                    ),
+                                    onPressed: () async {
+                                      final productDetail =
+                                          await fetchProductDetail(product.id);
+                                      showProductOptionBottomSheet(
+                                        context: context,
+                                        product:
+                                            productDetail, // Make sure this is the correct ProductDetail object
+                                      );
+                                    },
+                                    child: const Text(
+                                      'Add',
+                                      style: TextStyle(color: Colors.white),
                                     ),
                                   ),
                                 ),

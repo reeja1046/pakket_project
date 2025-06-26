@@ -11,18 +11,19 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String? phonenumber;
+  String phonenumber = '';
   @override
   void initState() {
     getphone();
-    // TODO: implement initState
-
     super.initState();
   }
 
   getphone() async {
     final prefs = await SharedPreferences.getInstance();
-    phonenumber = prefs.getString('phonenumber')!;
+    setState(() {
+      phonenumber = prefs.getString('phonenumber') ?? '';
+    });
+    print(phonenumber);
   }
 
   @override
@@ -62,7 +63,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     SizedBox(height: 4),
                     Text(
-                      phonenumber!.isEmpty ? 'Add phone number' : phonenumber!,
+                      phonenumber.isNotEmpty ? phonenumber : 'Add phone number',
                       style: TextStyle(color: Color(0xFF636260)),
                     ),
                     SizedBox(height: MediaQuery.of(context).size.height * 0.05),
@@ -83,12 +84,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Center(
                 child: TextButton(
                   onPressed: () {
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                      '/signin', // Your signup route
-                      (route) => false, // This will remove all previous routes
-                    );
+                    Navigator.of(
+                      context,
+                    ).pushNamedAndRemoveUntil('/signin', (route) => false);
                   },
-                  child: Text('Logout'),
+                  child: Text(
+                    'Logout',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                      fontSize: 16,
+                    ),
+                  ),
                 ),
               ),
             ],

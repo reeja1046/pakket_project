@@ -15,8 +15,8 @@ class HelpCenterList extends StatefulWidget {
 }
 
 class _HelpCenterListState extends State<HelpCenterList> {
-  List<bool> _isExpandedList = [false, false, false, false];
-  int? selectedAddressIndex;
+  final List<bool> _isExpandedList = [false, false, false, false];
+  int? selectedAddressIndex = 0; // Default selected address is the first one
   List<Address> savedAddresses = [];
   bool isLoadingAddresses = true;
   Address? selectedAddress;
@@ -31,13 +31,6 @@ class _HelpCenterListState extends State<HelpCenterList> {
     'Contact us',
   ];
 
-  final List<String> responses = [
-    'Your saved address for deliveries.',
-    'View products you have purchased.',
-    'We are a team dedicated to quality.',
-    'Reach us at help@pakket.com.',
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -49,6 +42,11 @@ class _HelpCenterListState extends State<HelpCenterList> {
     setState(() {
       savedAddresses = addresses;
       isLoadingAddresses = false;
+
+      // Set the first address as selected by default
+      if (savedAddresses.isNotEmpty && selectedAddressIndex == null) {
+        selectedAddressIndex = 0;
+      }
     });
   }
 
@@ -98,8 +96,7 @@ class _HelpCenterListState extends State<HelpCenterList> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) =>
-          OrderDetailModal(orderId: orderId), // Correct widget
+      builder: (context) => OrderDetailModal(orderId: orderId),
     );
   }
 
@@ -119,25 +116,42 @@ class _HelpCenterListState extends State<HelpCenterList> {
           child: ExpansionTile(
             initiallyExpanded: _isExpandedList[index],
             trailing: isAddressTile
-                ? GestureDetector(
-                    onTap: _showChangeAddressModal,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(4),
-                        color: CustomColors.baseColor,
-                      ),
-                      child: const Padding(
-                        padding: EdgeInsets.all(6.0),
-                        child: Text(
-                          'Add New',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 11,
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      GestureDetector(
+                        onTap: _showChangeAddressModal,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            color: CustomColors.baseColor,
+                          ),
+                          child: const Padding(
+                            padding: EdgeInsets.all(6.0),
+                            child: Text(
+                              'Add New',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 11,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      CircleAvatar(
+                        radius: 10,
+                        backgroundColor: CustomColors.baseColor,
+                        child: Icon(
+                          _isExpandedList[index]
+                              ? Icons.keyboard_arrow_up
+                              : Icons.keyboard_arrow_down,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ),
+                    ],
                   )
                 : CircleAvatar(
                     radius: 10,
@@ -186,8 +200,17 @@ class _HelpCenterListState extends State<HelpCenterList> {
                           children: [
                             for (int i = 0; i < savedAddresses.length; i++)
                               RadioListTile<int>(
+                                activeColor: CustomColors.baseColor,
                                 title: Text(
                                   '${savedAddresses[i].address}, ${savedAddresses[i].locality}',
+                                  style: TextStyle(
+                                    fontWeight: selectedAddressIndex == i
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                    color: selectedAddressIndex == i
+                                        ? Colors.black
+                                        : Colors.black54,
+                                  ),
                                 ),
                                 value: i,
                                 groupValue: selectedAddressIndex,
@@ -215,8 +238,14 @@ class _HelpCenterListState extends State<HelpCenterList> {
                         padding: const EdgeInsets.symmetric(horizontal: 12.0),
                         child: Column(
                           children: orderList.map((order) {
-                            return Card(
+                            return Container(
                               margin: const EdgeInsets.symmetric(vertical: 8),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: CustomColors.baseColor,
+                                ),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                               child: ListTile(
                                 title: Text('Order No: ${order.orderId}'),
                                 subtitle: Text('Status: ${order.status}'),
@@ -243,7 +272,7 @@ class _HelpCenterListState extends State<HelpCenterList> {
                     vertical: 8,
                   ),
                   child: Text(
-                    responses[index],
+                    'Reach us at help@pakket.com.',
                     style: const TextStyle(color: Colors.black54),
                   ),
                 ),

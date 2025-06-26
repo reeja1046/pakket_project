@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:pakket/model/order.dart';
 import 'package:pakket/controller/orderdetails.dart';
 import 'package:pakket/core/constants/color.dart';
@@ -38,41 +39,47 @@ class OrderDetailModal extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    SizedBox(height: 20),
                     // Header
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const Text(
-                          'Order Details',
+                          'Order details',
                           style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
-                        CircleAvatar(
-                          radius: 10,
-                          backgroundColor: CustomColors.baseColor,
-                          child: IconButton(
-                            icon: const Icon(Icons.close, size: 14),
-                            onPressed: () => Navigator.pop(context),
+
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: CircleAvatar(
+                            radius: 10,
+                            backgroundColor: CustomColors.baseColor,
+                            child: Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: 18,
+                            ),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Text(
-                      'Order No: ${order.orderId}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
+                    Text('Order No: ${order.orderId}'),
                     const SizedBox(height: 8),
                     Text(
-                      '${order.createdAt}',
+                      formatServerDateTime('${order.createdAt}'),
                       style: TextStyle(color: CustomColors.baseColor),
                     ),
-                    const SizedBox(height: 8),
+
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.08),
                     const Text('Delivered at:'),
+                    SizedBox(height: 5),
                     Text(
-                      '${order.address.address}, ${order.address.locality}, Floor: ${order.address.floor ?? 'N/A'}, Landmark: ${order.address.landmark ?? 'N/A'}',
+                      '${order.address.address}, ${order.address.locality}',
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     const Divider(height: 30),
 
@@ -80,54 +87,101 @@ class OrderDetailModal extends StatelessWidget {
                       (item) => Container(
                         margin: const EdgeInsets.only(bottom: 12),
                         padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
                         child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Image.network(
-                              item.thumbnail,
-                              height: 50,
-                              width: 50,
-                              fit: BoxFit.cover,
+                            // Image with background color
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors
+                                    .grey
+                                    .shade200, // Background only for image
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.all(6),
+                              child: Image.network(
+                                item.thumbnail,
+                                height: 50,
+                                width: 50,
+                                fit: BoxFit.cover,
+                              ),
                             ),
                             const SizedBox(width: 12),
+                            // Product details
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(item.title),
-                                  Text('${item.unit} x ${item.quantity}'),
+                                  Text(
+                                    item.title,
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Quantity: ${item.quantity}',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.black54,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Rs.${item.priceAtOrder.toStringAsFixed(2)} x ${item.quantity}',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
+                            // Total price
                             Text(
-                              '₹${(item.priceAtOrder * item.quantity).toStringAsFixed(2)}',
+                              'Rs.${(item.priceAtOrder * item.quantity).floor()}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ),
-
-                    const Divider(),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.05),
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
+
                         children: [
+                          Text(
+                            'Amount Details',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.02,
+                          ),
                           _priceRow(
                             'Item total',
-                            '₹${order.totalPrice.toStringAsFixed(2)}',
+                            'Rs.${order.totalPrice.toStringAsFixed(2)}',
+                          ),
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.02,
                           ),
                           _priceRow(
                             'Delivery charge',
-                            '₹${order.deliveryCharge.toStringAsFixed(2)}',
+                            'Rs.${order.deliveryCharge.toStringAsFixed(2)} ',
+                          ),
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.02,
                           ),
                           const Divider(),
                           _priceRow(
                             'Total',
-                            '₹${(order.totalPrice + order.deliveryCharge).toStringAsFixed(2)}',
+                            'Rs.${(order.totalPrice + order.deliveryCharge).toStringAsFixed(2)}',
                             isBold: true,
                           ),
                         ],
@@ -160,5 +214,13 @@ class OrderDetailModal extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String formatServerDateTime(String dateString) {
+    final DateTime dateTime = DateTime.parse(dateString); // Keep it in UTC
+    final String formattedDate = DateFormat(
+      'hh:mm a  dd MMMM yyyy',
+    ).format(dateTime);
+    return formattedDate;
   }
 }
