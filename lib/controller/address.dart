@@ -63,3 +63,68 @@ Future<List<Address>> fetchAddresses() async {
     return [];
   }
 }
+
+//delete address
+Future<bool> deleteAddressApi(String addressId) async {
+  final url = Uri.parse(
+    'https://pakket-dev.vercel.app/api/app/address/$addressId',
+  );
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token') ?? '';
+
+  try {
+    final response = await http.delete(
+      url,
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    print('Delete Address Status: ${response.statusCode}');
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      return true;
+    } else {
+      print('Failed to delete address: ${response.body}');
+      return false;
+    }
+  } catch (e) {
+    print('Error deleting address: $e');
+    return false;
+  }
+}
+
+//update address
+Future<bool> updateAddressApi(
+  String addressId,
+  AddressRequest updatedAddress,
+) async {
+  print(addressId);
+  print(updatedAddress.toJson());
+  final url = Uri.parse(
+    'https://pakket-dev.vercel.app/api/app/address/$addressId',
+  );
+  print(url);
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token') ?? '';
+
+  try {
+    final response = await http.patch(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(updatedAddress.toJson()),
+    );
+
+    print('Update Address Status: ${response.statusCode}');
+
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      print('Failed to update address: ${response.body}');
+      return false;
+    }
+  } catch (e) {
+    print('Error updating address: $e');
+    return false;
+  }
+}

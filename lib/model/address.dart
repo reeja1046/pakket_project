@@ -1,11 +1,11 @@
 class AddressRequest {
-  final String address;
-  final String locality;
-  final String? googleMapLink;
-  final String? landmark;
-  final String? floor;
-  final double? lattitude;
-  final double? longitude;
+  String address;
+  String locality;
+  String? googleMapLink;
+  String? landmark;
+  String? floor;
+  double? lattitude;
+  double? longitude;
   AddressRequest({
     required this.address,
     required this.locality,

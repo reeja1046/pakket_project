@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:pakket/controller/address.dart';
 import 'package:pakket/model/order.dart';
@@ -5,7 +6,9 @@ import 'package:pakket/controller/orderdetails.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/model/address.dart';
 import 'package:pakket/view/checkout/widgets/address.dart';
+import 'package:pakket/view/checkout/widgets/widget.dart';
 import 'package:pakket/view/widget/ordermodal.dart';
+import 'package:pakket/view/widget/snackbar.dart';
 
 class HelpCenterList extends StatefulWidget {
   const HelpCenterList({super.key});
@@ -16,7 +19,7 @@ class HelpCenterList extends StatefulWidget {
 
 class _HelpCenterListState extends State<HelpCenterList> {
   final List<bool> _isExpandedList = [false, false, false, false];
-  int? selectedAddressIndex = 0; // Default selected address is the first one
+  int selectedAddressIndex = 0; // Default selected address is the first one
   List<Address> savedAddresses = [];
   bool isLoadingAddresses = true;
   Address? selectedAddress;
@@ -209,22 +212,90 @@ class _HelpCenterListState extends State<HelpCenterList> {
                             for (int i = 0; i < savedAddresses.length; i++)
                               RadioListTile<int>(
                                 activeColor: CustomColors.baseColor,
-                                title: Text(
-                                  '${savedAddresses[i].address}, ${savedAddresses[i].locality}',
-                                  style: TextStyle(
-                                    fontWeight: selectedAddressIndex == i
-                                        ? FontWeight.bold
-                                        : FontWeight.normal,
-                                    color: selectedAddressIndex == i
-                                        ? Colors.black
-                                        : Colors.black54,
-                                  ),
+                                title: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        '${savedAddresses[i].address}, ${savedAddresses[i].locality}',
+                                        style: TextStyle(
+                                          fontWeight: selectedAddressIndex == i
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                          color: selectedAddressIndex == i
+                                              ? Colors.black
+                                              : Colors.black54,
+                                        ),
+                                      ),
+                                    ),
+                                    PopupMenuButton<String>(
+                                      icon: Icon(Icons.more_vert),
+                                      onSelected: (value) async {
+                                        if (value == 'edit') {
+                                          _showEditAddressDialog(
+                                            savedAddresses[i],
+                                            i,
+                                          );
+                                        } else if (value == 'delete') {
+                                          final confirmed = await showBlurDialog(
+                                            context: context,
+                                            title: 'Delete Address',
+                                            description:
+                                                'Are you sure you want to delete this address?',
+                                            actionText: 'Delete',
+                                            icon: Icons.delete,
+                                          );
+
+                                          if (confirmed == true) {
+                                            final isDeleted =
+                                                await deleteAddressApi(
+                                                  savedAddresses[i].id,
+                                                );
+
+                                            if (isDeleted) {
+                                              setState(() {
+                                                savedAddresses.removeAt(i);
+                                                if (selectedAddressIndex == i) {
+                                                  selectedAddressIndex = -1;
+                                                } else if (selectedAddressIndex >
+                                                    i) {
+                                                  selectedAddressIndex -= 1;
+                                                }
+                                              });
+                                              showSuccessSnackbar(
+                                                context,
+                                                'Address deleted successfully',
+                                              );
+                                            } else {
+                                              showSuccessSnackbar(
+                                                context,
+                                                'Failed to delete address',
+                                              );
+                                            }
+                                          }
+                                        }
+                                      },
+
+                                      itemBuilder: (context) => [
+                                        PopupMenuItem(
+                                          value: 'edit',
+                                          child: Text('Edit'),
+                                        ),
+
+                                        PopupMenuItem(
+                                          value: 'delete',
+                                          child: Text('Delete'),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                                 value: i,
                                 groupValue: selectedAddressIndex,
                                 onChanged: (val) {
                                   setState(() {
-                                    selectedAddressIndex = val;
+                                    selectedAddressIndex = val!;
                                   });
                                 },
                               ),
@@ -286,6 +357,170 @@ class _HelpCenterListState extends State<HelpCenterList> {
                 ),
               ],
             ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showEditAddressDialog(Address address, int index) {
+    final addressController = TextEditingController(text: address.address);
+    final localityController = TextEditingController(text: address.locality);
+    final landmarkController = TextEditingController(
+      text: address.landmark ?? '',
+    );
+    final floorController = TextEditingController(text: address.floor ?? '');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: CustomColors.baseContainer,
+        title: const Text('Edit Address', textAlign: TextAlign.center),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              buildTextField(addressController, "Enter your address"),
+              const SizedBox(height: 8),
+              buildTextField(localityController, "Enter your locality"),
+              const SizedBox(height: 8),
+              buildTextField(landmarkController, "Landmark (optional)"),
+              const SizedBox(height: 8),
+              buildTextField(floorController, "Floor (optional)"),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel', style: TextStyle(color: Colors.black)),
+          ),
+          TextButton(
+            onPressed: () async {
+              final updatedAddressRequest = AddressRequest(
+                address: addressController.text,
+                locality: localityController.text,
+                landmark: landmarkController.text,
+                floor: floorController.text,
+                lattitude: address.lat,
+                longitude: address.lng,
+              );
+
+              final isUpdated = await updateAddressApi(
+                address.id,
+                updatedAddressRequest,
+              );
+              print(isUpdated);
+              if (isUpdated) {
+                setState(() {
+                  savedAddresses[index] = Address(
+                    id: address.id,
+                    address: addressController.text,
+                    locality: localityController.text,
+                    lat: address.lat,
+                    lng: address.lng,
+                    floor: floorController.text,
+                    landmark: landmarkController.text,
+                  );
+                });
+                Navigator.pop(context);
+                showSuccessSnackbar(context, 'Address updated successfully');
+              } else {
+                showSuccessSnackbar(context, 'Failed to update address');
+              }
+            },
+            child: const Text(
+              'Save',
+              style: TextStyle(color: CustomColors.baseColor),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<bool?> showBlurDialog({
+    required BuildContext context,
+    required String title,
+    required String description,
+    required String actionText,
+    required IconData icon,
+  }) {
+    return showGeneralDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      pageBuilder: (context, _, __) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+          child: Dialog(
+            backgroundColor: Colors.transparent,
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: CustomColors.baseColor,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(15),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(icon, size: 30, color: CustomColors.baseColor),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    description,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: Text(
+                          actionText,
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
         );
       },
