@@ -210,84 +210,107 @@ class _ProductDetailsState extends State<ProductDetails> {
                   return Container(
                     margin: EdgeInsets.only(right: screenWidth * 0.025),
                     width: cardWidth,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.white,
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(screenWidth * 0.03),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                color: CustomColors.baseContainer,
-                                height:
-                                    MediaQuery.of(context).size.height * 0.15,
-                                width: screenWidth,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(5.0),
-                                  child: Image.network(
-                                    product.thumbnail,
-                                    height: imageHeight,
-                                    width: double.infinity,
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (_, __, ___) =>
-                                        const Icon(Icons.broken_image),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: screenWidth * 0.02),
-                            Text(
-                              product.title,
-                              style: TextStyle(
-                                fontSize: fontSize,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            SizedBox(height: screenWidth * 0.01),
-                            Text(
-                              option.unit,
-                              style: TextStyle(
-                                fontSize: fontSize * 0.9,
-                                color: Colors.grey[700],
-                              ),
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Rs.${option.offerPrice.toStringAsFixed(2)}',
-                                  style: TextStyle(
-                                    fontSize: fontSize,
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                Container(
-                                  width: 60,
-                                  height: 30,
-                                  decoration: BoxDecoration(
-                                    color: CustomColors.baseColor,
-                                    borderRadius: BorderRadius.circular(7),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      'Add',
-                                      style: TextStyle(
-                                        fontSize: fontSize * 0.9,
-                                        color: Colors.white,
-                                      ),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                ProductDetails(productId: product.id),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.white,
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(screenWidth * 0.03),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Container(
+                                  color: CustomColors.baseContainer,
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.15,
+                                  width: screenWidth,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(5.0),
+                                    child: Image.network(
+                                      product.thumbnail,
+                                      height: imageHeight,
+                                      width: double.infinity,
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (_, __, ___) =>
+                                          const Icon(Icons.broken_image),
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
-                          ],
+                              ),
+                              SizedBox(height: screenWidth * 0.02),
+                              Text(
+                                product.title,
+                                style: TextStyle(
+                                  fontSize: fontSize,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              SizedBox(height: screenWidth * 0.01),
+                              Text(
+                                option.unit,
+                                style: TextStyle(
+                                  fontSize: fontSize * 0.9,
+                                  color: Colors.grey[700],
+                                ),
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Rs.${option.offerPrice.toStringAsFixed(2)}',
+                                    style: TextStyle(
+                                      fontSize: fontSize,
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      final productDetail =
+                                          await fetchProductDetail(product.id);
+                                      showProductOptionBottomSheet(
+                                        context: context,
+                                        product:
+                                            productDetail, // Make sure this is the correct ProductDetail object
+                                      );
+                                    },
+                                    child: Container(
+                                      width: 60,
+                                      height: 30,
+                                      decoration: BoxDecoration(
+                                        color: CustomColors.baseColor,
+                                        borderRadius: BorderRadius.circular(7),
+                                      ),
+                                      child: Center(
+                                        child: Text(
+                                          'Add',
+                                          style: TextStyle(
+                                            fontSize: fontSize * 0.9,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

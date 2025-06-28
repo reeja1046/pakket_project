@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:pakket/controller/product.dart';
 import 'package:pakket/controller/trending.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/model/trending.dart';
+import 'package:pakket/view/product/productdetails.dart';
+import 'package:pakket/view/widget/modal.dart';
 
 class CheckoutDealsSection extends StatefulWidget {
   const CheckoutDealsSection({super.key});
@@ -64,7 +67,15 @@ class _CheckoutDealsSectionState extends State<CheckoutDealsSection> {
                         margin: EdgeInsets.only(right: screenWidth * 0.025),
                         width: cardWidth,
                         child: GestureDetector(
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ProductDetails(productId: product.id),
+                              ),
+                            );
+                          },
                           child: Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
@@ -136,21 +147,34 @@ class _CheckoutDealsSectionState extends State<CheckoutDealsSection> {
                                           decorationThickness: 2,
                                         ),
                                       ),
-                                      Container(
-                                        width: 60,
-                                        height: 30,
-                                        decoration: BoxDecoration(
-                                          color: CustomColors.baseColor,
-                                          borderRadius: BorderRadius.circular(
-                                            7,
+                                      GestureDetector(
+                                        onTap: () async {
+                                          final productDetail =
+                                              await fetchProductDetail(
+                                                product.id,
+                                              );
+                                          showProductOptionBottomSheet(
+                                            context: context,
+                                            product:
+                                                productDetail, // Make sure this is the correct ProductDetail object
+                                          );
+                                        },
+                                        child: Container(
+                                          width: 60,
+                                          height: 30,
+                                          decoration: BoxDecoration(
+                                            color: CustomColors.baseColor,
+                                            borderRadius: BorderRadius.circular(
+                                              7,
+                                            ),
                                           ),
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            'Add',
-                                            style: TextStyle(
-                                              fontSize: fontSize * 0.9,
-                                              color: Colors.white,
+                                          child: Center(
+                                            child: Text(
+                                              'Add',
+                                              style: TextStyle(
+                                                fontSize: fontSize * 0.9,
+                                                color: Colors.white,
+                                              ),
                                             ),
                                           ),
                                         ),

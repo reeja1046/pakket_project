@@ -3,6 +3,7 @@ import 'package:pakket/controller/cart.dart';
 import 'package:pakket/model/product.dart';
 import 'package:pakket/view/checkout/checkout.dart';
 import 'package:pakket/core/constants/color.dart';
+import 'package:pakket/view/widget/snackbar.dart';
 
 void showProductOptionBottomSheet({
   required BuildContext context,
@@ -18,19 +19,21 @@ void showProductOptionBottomSheet({
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (context) {
-      return Container(
-        decoration: const BoxDecoration(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          gradient: LinearGradient(
-            colors: [Color(0xFFE9ECDB), Color(0xFFE8EBD5)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            stops: [0.94, 1.0],
+      return SafeArea(
+        child: Container(
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            gradient: LinearGradient(
+              colors: [Color(0xFFE9ECDB), Color(0xFFE8EBD5)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              stops: [0.94, 1.0],
+            ),
           ),
-        ),
-        child: _OptionBottomSheetContent(
-          product: product,
-          quantities: quantities,
+          child: _OptionBottomSheetContent(
+            product: product,
+            quantities: quantities,
+          ),
         ),
       );
     },
@@ -212,11 +215,8 @@ class _OptionBottomSheetContentState extends State<_OptionBottomSheetContent> {
                 }
 
                 if (anyAdded) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Added to cart successfully!'),
-                    ),
-                  );
+                  showSuccessSnackbar(context, 'Added to cart successfully!');
+
                   Navigator.pop(context);
                   Navigator.push(
                     context,
@@ -226,10 +226,9 @@ class _OptionBottomSheetContentState extends State<_OptionBottomSheetContent> {
                   );
                 } else {
                   Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please select at least one option'),
-                    ),
+                  showSuccessSnackbar(
+                    context,
+                    'Please select at least one option',
                   );
                 }
               },

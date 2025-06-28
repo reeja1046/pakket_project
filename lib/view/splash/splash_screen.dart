@@ -1,5 +1,6 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:pakket/view/widget/bottomnavbar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -9,26 +10,26 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  // Navigation timer
-  Timer? _navigationTimer;
-
   @override
   void initState() {
     super.initState();
-    _initializeSplash();
+    checkLoginStatus();
   }
 
-  @override
-  void dispose() {
-    _navigationTimer?.cancel(); // Prevent memory leaks
-    super.dispose();
-  }
+  void checkLoginStatus() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
 
-  void _initializeSplash() {
-    _navigationTimer = Timer(
-      const Duration(seconds: 4),
-      () => Navigator.of(context).pushReplacementNamed('/onboarding'),
-    );
+    // Optional: Add a small splash delay
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (isLoggedIn) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => BottomNavScreen()),
+      );
+    } else {
+      Navigator.of(context).pushReplacementNamed('/onboarding');
+    }
   }
 
   @override
@@ -45,9 +46,9 @@ class _SplashScreenState extends State<SplashScreen> {
               const SizedBox(height: 40),
               Image.asset(
                 'assets/logo_text.png',
-                errorBuilder: (_, __, ___) => const Icon(Icons.image), // Fallback
+                errorBuilder: (_, __, ___) =>
+                    const Icon(Icons.image), // Fallback
               ),
-            
             ],
           ),
         ),

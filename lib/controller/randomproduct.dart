@@ -34,3 +34,33 @@ Future<List<CategoryProduct>> fetchRandomProducts(int maxCount) async {
     throw Exception('Failed to load products');
   }
 }
+
+Future<List<CategoryProduct>> fetchAllProducts() async {
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('token') ?? '';
+
+  final response = await http.get(
+    Uri.parse('https://pakket-dev.vercel.app/api/app/product'),
+    headers: {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    },
+  );
+
+  if (response.statusCode == 200) {
+    final decoded = jsonDecode(response.body);
+
+    if (decoded['success'] == true && decoded['products'] is List) {
+      final List<dynamic> data = decoded['products'];
+      List<CategoryProduct> allProducts =
+          data.map((e) => CategoryProduct.fromJson(e)).toList();
+
+      return allProducts; // Return all products directly
+    } else {
+      throw Exception('API returned no products or malformed response');
+    }
+  } else {
+    throw Exception('Failed to load products');
+  }
+}
+

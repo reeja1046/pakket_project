@@ -37,8 +37,6 @@ class OrderRequest {
   OrderRequest({required this.address, required this.items});
 
   Map<String, dynamic> toJson() {
-    print('[[[[[[[[[[]]]]]]]]]]');
-    print(items.toString());
     return {
       "address": address,
       "items": items.map((item) => item.toJson()).toList(),

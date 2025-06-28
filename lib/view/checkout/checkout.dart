@@ -1,17 +1,18 @@
-import 'dart:convert';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:pakket/controller/cart.dart';
 import 'package:pakket/controller/orderplaced.dart';
-import 'package:pakket/controller/trending.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/model/address.dart';
 import 'package:pakket/model/cartfetching.dart';
 import 'package:pakket/model/orderplaced.dart';
-import 'package:pakket/model/trending.dart';
 import 'package:pakket/view/checkout/widgets/widget.dart';
 import 'package:pakket/view/checkout/widgets/address.dart';
 import 'package:pakket/view/checkout/widgets/beforecheckout.dart';
 import 'package:pakket/view/order.dart';
+import 'package:pakket/view/widget/bottomnavbar.dart';
+import 'package:pakket/view/widget/snackbar.dart';
 
 class CheckoutPage extends StatefulWidget {
   final bool fromBottomNav;
@@ -29,7 +30,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   bool isLoading = true;
   Address? _selectedAddress;
   List<int> quantities = [];
-
+  String? ordernum;
   @override
   void initState() {
     super.initState();
@@ -43,7 +44,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
     for (var item in items) {
       final key = '${item.productId}_${item.optionId}';
-  
 
       if (groupedItems.containsKey(key)) {
         groupedItems[key]!.quantity += item.quantity;
@@ -122,7 +122,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
               }
             } else {
               // If opened from product flow, pop the navigation stack
-              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => BottomNavScreen()),
+              );
             }
           },
         ),
@@ -326,8 +329,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
               GestureDetector(
                 onTap: _showChangeAddressModal,
-                child: const Text(
-                  "Change",
+                child: Text(
+                  _selectedAddress == null ? "Select" : "Change",
                   style: TextStyle(
                     color: CustomColors.baseColor,
                     fontWeight: FontWeight.w500,
@@ -339,7 +342,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           const SizedBox(height: 10),
           Text(
             _selectedAddress == null
-                ? "Select an address"
+                ? " "
                 : '${_selectedAddress!.address}, ${_selectedAddress!.locality}',
             style: const TextStyle(fontWeight: FontWeight.bold),
           ),
@@ -362,6 +365,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
               Expanded(
                 child: ElevatedButton(
                   onPressed: () async {
+                    if (_selectedAddress == null) {
+                      // Show warning dialog if no address is selected
+                      showSuccessSnackbar(
+                        context,
+                        "Please select an address before placing order",
+                      );
+                      return;
+                    }
+
                     print('selected place order');
 
                     final orderItems = cartItems.map((item) {
@@ -373,24 +385,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
                         priceAtOrder: item.offerPrice,
                       );
                     }).toList();
-                    print(_selectedAddress!.id);
-                    print('pass orderreq to orderreq class');
-                    print(orderItems);
-                    print(_selectedAddress!.id);
+
                     final orderRequest = OrderRequest(
-                      address: _selectedAddress!
-                          .id, // Replace with selected address ID
+                      address: _selectedAddress!.id,
                       items: orderItems,
                     );
-
-                    print(
-                      'Order Items: ${jsonEncode(orderItems.map((e) => e.toJson()).toList())}',
-                    );
-                    print(
-                      'Order Request: ${jsonEncode(orderRequest.toJson())}',
-                    );
-
-                    print('comes from order');
 
                     // ✅ Show loading dialog first
                     showDialog(
@@ -399,39 +398,16 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       builder: (_) =>
                           const Center(child: CircularProgressIndicator()),
                     );
-                    print('api call');
-                    // ✅ Then call API
-                    final response = await placeOrder(orderRequest, context);
 
+                    // ✅ Call API
+                    final response = await placeOrder(orderRequest, context);
+                    ordernum = response!.orderId;
                     // ✅ Remove loading dialog
                     Navigator.pop(context);
 
                     if (response != null) {
-                      print('not null');
                       // Show success dialog
-                      showDialog(
-                        context: context,
-                        builder: (_) => AlertDialog(
-                          title: const Text('Order Placed Successfully'),
-                          content: Text('Order ID: ${response.orderId}'),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context); // Close dialog
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => OrderScreen(),
-                                  ),
-                                );
-                              },
-                              child: const Text('OK'),
-                            ),
-                          ],
-                        ),
-                      );
-                    } else {
-                      // Error is already handled in the controller's Snackbar
+                      showBlurDialog(context, ordernum);
                     }
                   },
 
@@ -480,4 +456,80 @@ class _CheckoutPageState extends State<CheckoutPage> {
       ),
     );
   }
+}
+
+void showBlurDialog(BuildContext context, ordernum) {
+  showGeneralDialog(
+    context: context,
+    barrierDismissible: false,
+    barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+    pageBuilder:
+        (
+          BuildContext buildContext,
+          Animation animation,
+          Animation secondaryAnimation,
+        ) {
+          Future.delayed(const Duration(seconds: 2), () {
+            Navigator.pop(context);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => BottomNavScreen()),
+            );
+          });
+
+          return BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+            child: Dialog(
+              backgroundColor: Colors.transparent,
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: CustomColors.baseColor,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        const CircleAvatar(
+                          radius: 40,
+                          backgroundColor: Colors.white,
+                        ),
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: CustomColors.baseColor,
+                          child: const Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: 35,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Thank you!, for placing order with us!',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Your order no. $ordernum. our delivery team will shortly contacting you.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.black),
+                    ),
+                    const SizedBox(height: 60),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+  );
 }

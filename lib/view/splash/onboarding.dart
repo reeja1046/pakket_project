@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:pakket/core/constants/color.dart';
@@ -67,39 +68,45 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
 
-    return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                SizedBox(height: height * 0.05),
-                _buildSkipButton(),
-                SizedBox(
-                  height: height * 0.74,
-                  width: double.infinity,
-                  child: Image.asset(
-                    _onboardingData[_currentPage]['image']!,
-                    fit: BoxFit.cover,
+    return WillPopScope(
+      onWillPop: () async {
+        SystemNavigator.pop(); // ✅ This will close the app
+        return false; // Prevents the default back navigation
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  SizedBox(height: height * 0.05),
+                  _buildSkipButton(),
+                  SizedBox(
+                    height: height * 0.74,
+                    width: double.infinity,
+                    child: Image.asset(
+                      _onboardingData[_currentPage]['image']!,
+                      fit: BoxFit.cover,
+                    ),
                   ),
-                ),
 
-                SizedBox(),
-              ],
-            ),
-            Positioned(
-              bottom: 30,
-              left: 15,
-              right: 15,
-              child: SvgPicture.asset('assets/splash/rectangle.svg'),
-            ),
-            Positioned(
-              bottom: 45,
-              left: 15,
-              right: 15,
-              child: _buildBottomContent(),
-            ),
-          ],
+                  SizedBox(),
+                ],
+              ),
+              Positioned(
+                bottom: 30,
+                left: 15,
+                right: 15,
+                child: SvgPicture.asset('assets/splash/rectangle.svg'),
+              ),
+              Positioned(
+                bottom: 45,
+                left: 15,
+                right: 15,
+                child: _buildBottomContent(),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pakket/model/order.dart';
 import 'package:pakket/controller/orderdetails.dart';
 import 'package:pakket/core/constants/color.dart';
-import 'package:pakket/model/orderfetch.dart';
+import 'package:pakket/view/widget/ordermodal.dart';
 
 class OrderScreen extends StatefulWidget {
   final bool fromBottomNav;
@@ -89,7 +89,7 @@ class _OrderScreenState extends State<OrderScreen> {
                           ),
                           trailing: TextButton(
                             onPressed: () =>
-                                _showOrderDetails(context, order.orderId),
+                                _showOrderDetailModal(order.orderId),
                             child: Text(
                               'View in details',
                               style: TextStyle(color: CustomColors.baseColor),
@@ -108,158 +108,15 @@ class _OrderScreenState extends State<OrderScreen> {
     );
   }
 
-  void _showOrderDetails(BuildContext context, String orderId) async {
+  void _showOrderDetailModal(String orderId) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) {
-        return FutureBuilder<OrderDetail>(
-          future: fetchOrderDetail(orderId),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Padding(
-                padding: EdgeInsets.all(20),
-                child: Center(child: CircularProgressIndicator()),
-              );
-            } else if (snapshot.hasError) {
-              return Padding(
-                padding: const EdgeInsets.all(20),
-                child: Text('Error: ${snapshot.error}'),
-              );
-            } else {
-              final order = snapshot.data!;
-              print(order);
-              return Padding(
-                padding: const EdgeInsets.all(16),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Header
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Order Details',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          CircleAvatar(
-                            radius: 10,
-                            backgroundColor: CustomColors.baseColor,
-                            child: IconButton(
-                              icon: Icon(Icons.close, size: 14),
-                              onPressed: () => Navigator.pop(context),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Order No: ${order.orderId}',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${order.createdAt}',
-                        style: TextStyle(color: CustomColors.baseColor),
-                      ),
-                      const SizedBox(height: 8),
-                      Text('Delivered at:'),
-                      Text(
-                        '${order.address.address}, ${order.address.locality}, Floor: ${order.address.floor}, Landmark: ${order.address.landmark}',
-                      ),
-                      const Divider(height: 30),
-
-                      ...order.items.map(
-                        (item) => Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Row(
-                            children: [
-                              Image.network(
-                                item.thumbnail,
-                                height: 50,
-                                width: 50,
-                                fit: BoxFit.cover,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(item.title),
-                                    Text('${item.unit} x ${item.quantity}'),
-                                  ],
-                                ),
-                              ),
-                              Text(
-                                '₹${(item.priceAtOrder * item.quantity).toStringAsFixed(2)}',
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      const Divider(),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            _priceRow(
-                              'Item total',
-                              '₹${order.totalPrice.toStringAsFixed(2)}',
-                            ),
-                            _priceRow(
-                              'Delivery charge',
-                              '₹${order.deliveryCharge.toStringAsFixed(2)}',
-                            ),
-                            const Divider(),
-                            _priceRow(
-                              'Total',
-                              '₹${(order.totalPrice + order.deliveryCharge).toStringAsFixed(2)}',
-                              isBold: true,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-          },
-        );
-      },
-    );
-  }
-
-  Widget _priceRow(String label, String value, {bool isBold = false}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: isBold ? TextStyle(fontWeight: FontWeight.bold) : null,
-          ),
-          Text(
-            value,
-            style: isBold ? TextStyle(fontWeight: FontWeight.bold) : null,
-          ),
-        ],
-      ),
+      builder: (context) => OrderDetailModal(orderId: orderId),
     );
   }
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:pakket/model/order.dart';
 import 'package:pakket/controller/orderdetails.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/model/orderfetch.dart';
@@ -67,7 +66,7 @@ class OrderDetailModal extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Text('Order No: ${order.orderId}'),
+                    Text('Order No: $orderId'),
                     const SizedBox(height: 8),
                     Text(
                       formatServerDateTime('${order.createdAt}'),

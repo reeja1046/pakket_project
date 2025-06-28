@@ -23,7 +23,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final dobController = TextEditingController();
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
-
+  bool isLoading = false;
   bool isPasswordVisible = false;
   bool isConfirmPasswordVisible = false;
 
@@ -61,7 +61,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
             child: Column(
               children: [
-                SizedBox(height: size.height * 0.035),
+                SizedBox(height: size.height * 0.02),
                 SizedBox(
                   height: size.height * 0.1,
                   child: Image.asset('assets/logo.png'),
@@ -86,7 +86,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         CustomTextField(
                           hint: "Your Name",
                           controller: nameController,
-                          validator: (value) => value!.isEmpty
+                          validator: (value) => value!.trim().isEmpty
                               ? "Please enter your full name"
                               : null,
                         ),
@@ -94,7 +94,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           hint: "Your email id",
                           controller: emailController,
                           validator: (value) {
-                            if (value!.isEmpty) {
+                            if (value!.trim().isEmpty) {
                               return "Please enter a valid email address";
                             }
                             if (!RegExp(
@@ -119,7 +119,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           ),
 
                           validator: (value) {
-                            if (value!.isEmpty) {
+                            if (value!.trim().isEmpty) {
                               return "Please enter your phone number";
                             }
                             if (!RegExp(r'^\d{10}$').hasMatch(value)) {
@@ -132,7 +132,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           hint: "AS*(@L_@(P123",
                           controller: passwordController,
                           validator: (value) {
-                            if (value!.isEmpty) {
+                            if (value!.trim().isEmpty) {
                               return "Please create a password";
                             }
                             if (value.length < 8) {
@@ -153,14 +153,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             });
                           },
                           validator: (value) {
-                            if (value!.isEmpty) return "Confirm your password";
-                            if (value != passwordController.text) {
+                            if (value!.trim().isEmpty)
+                              return "Confirm your password";
+                            if (value.trim() !=
+                                passwordController.text.trim()) {
                               return "Passwords do not match";
                             }
                             return null;
                           },
                         ),
-                        SizedBox(height: size.height * 0.025),
+                        SizedBox(height: size.height * 0.02),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: CustomColors.baseColor,
@@ -171,34 +173,47 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               vertical: size.height * 0.018,
                             ),
                           ),
-                          onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
-                              final prefs =
-                                  await SharedPreferences.getInstance();
-                              await prefs.setString(
-                                'phonenumber',
-                                phoneController.text,
-                              );
-                              // Proceed with form submission
-                              signUp(
-                                nameController.text,
-                                emailController.text,
-                                passwordController.text,
-                                phoneController.text,
-                                context,
-                              );
-                            }
-                          },
-                          child: const Text(
-                            'SUBMIT NOW',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          onPressed: isLoading
+                              ? null
+                              : () async {
+                                  if (_formKey.currentState!.validate()) {
+                                    setState(() => isLoading = true);
+                                    final prefs =
+                                        await SharedPreferences.getInstance();
+                                    await prefs.setString(
+                                      'phonenumber',
+                                      phoneController.text,
+                                    );
+                                    // Proceed with form submission
+                                    signUp(
+                                      nameController.text.trim(),
+                                      emailController.text.trim(),
+                                      passwordController.text.trim(),
+                                      phoneController.text.trim(),
+                                      context,
+                                    );
+                                    setState(() => isLoading = false);
+                                  }
+                                },
+                          child: isLoading
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  'SUBMIT NOW',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                         ),
-                        SizedBox(height: size.height * 0.06),
+                        SizedBox(height: size.height * 0.05),
                         Center(
                           child: RichText(
                             text: TextSpan(

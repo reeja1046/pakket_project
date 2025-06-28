@@ -17,6 +17,7 @@ class _SignInScreenState extends State<SignInScreen> {
   final phoneController = TextEditingController();
   final passwordController = TextEditingController();
   bool _isPasswordVisible = false;
+  bool isLoading = false;
 
   @override
   void dispose() {
@@ -144,29 +145,46 @@ class _SignInScreenState extends State<SignInScreen> {
                       vertical: size.height * 0.015,
                     ),
                   ),
-                  onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.setString(
-                        'phonenumber',
-                        phoneController.text,
-                      );
-                      // Handle sign-in
-                      login(
-                        phoneController.text,
-                        passwordController.text,
-                        context,
-                      );
-                    }
-                  },
-                  child: const Text(
-                    'SUBMIT NOW',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+
+                  onPressed: isLoading
+                      ? null // Disable button while loading
+                      : () async {
+                          if (_formKey.currentState!.validate()) {
+                            setState(() => isLoading = true);
+
+                            final prefs = await SharedPreferences.getInstance();
+                            await prefs.setString(
+                              'phonenumber',
+                              phoneController.text,
+                            );
+
+                            await login(
+                              phoneController.text,
+                              passwordController.text,
+                              context,
+                            );
+
+                            setState(() => isLoading = false);
+                          }
+                        },
+
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'SUBMIT NOW',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
 
                 SizedBox(height: size.height * 0.04),

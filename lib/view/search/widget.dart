@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:pakket/controller/product.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/view/product/productdetails.dart';
+import 'package:pakket/view/widget/modal.dart';
 
-Widget buildProductCard(
-  dynamic product,
-  BuildContext context,
-) {
+Widget buildProductCard(dynamic product, BuildContext context) {
   final thumbnail = product['thumbnail'] ?? '';
   final title = product['title'] ?? 'No title';
   final options = product['options'] ?? [];
@@ -15,10 +13,12 @@ Widget buildProductCard(
 
   return GestureDetector(
     onTap: () async {
-    if (context.mounted) {
+      if (context.mounted) {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => ProductDetails(productId:  productId)),
+          MaterialPageRoute(
+            builder: (_) => ProductDetails(productId: productId),
+          ),
         );
       }
     },
@@ -84,7 +84,15 @@ Widget buildProductCard(
                   borderRadius: BorderRadius.circular(5),
                 ),
               ),
-              onPressed: () {},
+              onPressed: () async {
+                final productDetail = await fetchProductDetail(productId);
+                showProductOptionBottomSheet(
+                  context: context,
+                  product:
+                      productDetail, // Make sure this is the correct ProductDetail object
+                );
+              },
+
               child: Text(
                 options.length == 1 ? 'Add' : '${options.length} options',
                 style: const TextStyle(

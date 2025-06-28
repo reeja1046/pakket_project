@@ -6,6 +6,7 @@ import 'package:pakket/model/allcategory.dart';
 import 'package:pakket/controller/category.dart';
 import 'package:pakket/view/product/productdetails.dart';
 import 'package:pakket/view/search/search.dart';
+import 'package:pakket/view/widget/bottomnavbar.dart';
 import 'package:pakket/view/widget/modal.dart';
 
 class AllGroceryItems extends StatefulWidget {
@@ -53,7 +54,22 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
         selectedCategoryName = initialCategoryName;
       });
 
-      fetchProducts(selectedCategoryId!);
+      /// Check if 'All Items' is selected
+      if (matchingCategory.name.toLowerCase() == 'all items') {
+        fetchAllProducts()
+            .then((fetchedProducts) {
+              setState(() {
+                products = fetchedProducts;
+                isLoading = false;
+              });
+            })
+            .catchError((e) {
+              print('Error fetching products: $e');
+              setState(() => isLoading = false);
+            });
+      } else {
+        fetchProducts(initialCategoryId);
+      }
     } catch (e) {
       print('Error fetching categories: $e');
     }
@@ -86,7 +102,10 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => BottomNavScreen()),
+          ),
         ),
         actions: [
           IconButton(
@@ -106,92 +125,87 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
             /// LEFT - Categories
             SizedBox(
               width: MediaQuery.of(context).size.width * 0.3,
-              child: Scrollbar(
+              child: ListView.builder(
                 controller: categoryScrollController,
-                thumbVisibility: true,
-                child: ListView.builder(
-                  controller: categoryScrollController,
-                  itemCount: categories.length,
-                  itemBuilder: (context, index) {
-                    final category = categories[index];
-                    final isSelected = category.id == selectedCategoryId;
+                itemCount: categories.length,
+                itemBuilder: (context, index) {
+                  final category = categories[index];
+                  final isSelected = category.id == selectedCategoryId;
 
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedCategoryId = category.id;
-                          selectedCategoryName = category.name;
-                          isLoading = true;
-                        });
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        selectedCategoryId = category.id;
+                        selectedCategoryName = category.name;
+                        isLoading = true;
+                      });
 
-                        if (category.name.toLowerCase() == 'all items') {
-                          fetchRandomProducts(8)
-                              .then((fetchedProducts) {
-                                setState(() {
-                                  products = fetchedProducts;
-                                  isLoading = false;
-                                });
-                              })
-                              .catchError((e) {
-                                print('Error fetching random products: $e');
-                                setState(() => isLoading = false);
+                      if (category.name.toLowerCase() == 'all items') {
+                        fetchRandomProducts(8)
+                            .then((fetchedProducts) {
+                              setState(() {
+                                products = fetchedProducts;
+                                isLoading = false;
                               });
-                        } else {
-                          fetchProducts(category.id);
-                        }
-                      },
+                            })
+                            .catchError((e) {
+                              setState(() => isLoading = false);
+                            });
+                      } else {
+                        fetchProducts(category.id);
+                      }
+                    },
 
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: CustomColors.scaffoldBgClr,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: CustomColors.scaffoldBgClr,
 
-                          border: Border(
-                            right: BorderSide(
-                              color: isSelected
-                                  ? CustomColors.baseColor
-                                  : Colors.transparent,
-                              width: 3,
-                            ),
+                        border: Border(
+                          right: BorderSide(
+                            color: isSelected
+                                ? CustomColors.baseColor
+                                : Colors.transparent,
+                            width: 3,
                           ),
                         ),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(15),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey[300],
-                                  ),
-                                  child: Image.network(
-                                    category.imageUrl,
-                                    height: 70,
-                                    width: 70,
-                                    fit: BoxFit.contain,
-                                  ),
+                      ),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(15),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[300],
+                                ),
+                                child: Image.network(
+                                  category.imageUrl,
+                                  height: 70,
+                                  width: 70,
+                                  fit: BoxFit.contain,
                                 ),
                               ),
                             ),
-                            Text(
-                              category.name,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
+                          ),
+                          Text(
+                            category.name,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
                             ),
-                            const SizedBox(height: 8),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(height: 8),
+                        ],
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
               ),
             ),
 

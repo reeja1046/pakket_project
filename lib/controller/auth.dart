@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/view/widget/bottomnavbar.dart';
@@ -16,6 +15,7 @@ Future<void> signUp(
   context,
 ) async {
   const url = 'https://pakket-dev.vercel.app/api/app/register';
+  
   try {
     final response = await http.post(
       Uri.parse(url),
@@ -142,6 +142,7 @@ Future<void> login(String phone, String password, BuildContext context) async {
         // ✅ Save token
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('token', token);
+        await prefs.setBool('isLoggedIn', true);
         //show success snackbar
         showSuccessSnackbar(context, 'Login successful! Welcome back.');
 

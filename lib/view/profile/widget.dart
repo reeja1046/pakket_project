@@ -5,7 +5,7 @@ import 'package:pakket/controller/orderdetails.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/model/address.dart';
 import 'package:pakket/view/checkout/widgets/address.dart';
-import 'package:pakket/view/profile/ordermodal.dart';
+import 'package:pakket/view/widget/ordermodal.dart';
 
 class HelpCenterList extends StatefulWidget {
   const HelpCenterList({super.key});
@@ -77,12 +77,20 @@ class _HelpCenterListState extends State<HelpCenterList> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (context) => AddressModal(
-        onAddressSelected: (address) async {
-          setState(() {
-            selectedAddress = address;
-          });
-          await fetchAddressList();
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) {
+          return AddressModal(
+            onAddressSelected: (address) async {
+              setState(() {
+                selectedAddress = address;
+              });
+              await fetchAddressList();
+            },
+          );
         },
       ),
     );

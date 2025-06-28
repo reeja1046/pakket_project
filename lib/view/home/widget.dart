@@ -1,7 +1,5 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:pakket/controller/herobanner.dart';
 import 'package:pakket/controller/product.dart';
 import 'package:pakket/core/constants/color.dart';
@@ -10,7 +8,6 @@ import 'package:pakket/model/herobanner.dart';
 import 'package:pakket/model/trending.dart';
 import 'package:pakket/view/product/productdetails.dart';
 import 'package:pakket/view/widget/modal.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 Widget buildHeader(BuildContext context, currentAddress1, currentAddress2) {
   final height = MediaQuery.of(context).size.height;
@@ -418,38 +415,4 @@ Widget showTrendingProduct(Future<List<Product>> trendingProducts) {
       );
     },
   );
-}
-
-Future<Position> determinePosition() async {
-  bool serviceEnabled;
-  LocationPermission permission;
-
-  serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  if (!serviceEnabled) {
-    return Future.error('Location services are disabled.');
-  }
-
-  permission = await Geolocator.checkPermission();
-  if (permission == LocationPermission.denied) {
-    permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.denied) {
-      return Future.error('Location permissions are denied.');
-    }
-  }
-
-  if (permission == LocationPermission.deniedForever) {
-    return Future.error(
-      'Location permissions are permanently denied, we cannot request permissions.',
-    );
-  }
-
-  return await Geolocator.getCurrentPosition();
-}
-
-Future<void> saveLocation(double lat, double lon) async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setDouble('latitude', lat);
-  await prefs.setDouble('longitude', lon);
-  print(lon);
-  print(lat);
 }

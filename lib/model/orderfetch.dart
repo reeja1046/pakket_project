@@ -7,6 +7,7 @@ class OrderDetail {
   final double totalPrice;
   final double deliveryCharge;
   final String note;
+  
 
   OrderDetail({
     required this.orderId,
