@@ -22,12 +22,6 @@ Future<OrderResponse?> placeOrder(
 
       body: jsonEncode(order.toJson()),
     );
-    print('...........33333.........');
-    print(jsonEncode(order.toJson()));
-    print('....................');
-    print(jsonDecode(response.body));
-    print('Item IDs: ${order.items.map((e) => e.item).toList()}');
-    print('Option IDs: ${order.items.map((e) => e.option).toList()}');
 
     final data = jsonDecode(response.body);
     print('we get the response from the api : $data');
