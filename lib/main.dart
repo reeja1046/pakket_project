@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'routes/app_router.dart';
+import 'package:pakket/routes/app_router.dart';
 import 'routes/app_routes.dart';
 
 void main() {
@@ -12,7 +13,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'Pakket App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       initialRoute: AppRoutes.splash,
-      onGenerateRoute: AppRouter.generateRoute,
+      getPages: AppPages.routes,
     );
   }
 }

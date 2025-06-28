@@ -229,65 +229,46 @@ class _HelpCenterListState extends State<HelpCenterList> {
                                         ),
                                       ),
                                     ),
-                                    PopupMenuButton<String>(
-                                      icon: Icon(Icons.more_vert),
-                                      onSelected: (value) async {
-                                        if (value == 'edit') {
-                                          _showEditAddressDialog(
-                                            savedAddresses[i],
-                                            i,
-                                          );
-                                        } else if (value == 'delete') {
-                                          final confirmed = await showBlurDialog(
-                                            context: context,
-                                            title: 'Delete Address',
-                                            description:
-                                                'Are you sure you want to delete this address?',
-                                            actionText: 'Delete',
-                                            icon: Icons.delete,
-                                          );
+                                    IconButton(
+                                      icon: Icon(Icons.delete),
+                                      onPressed: () async {
+                                        final confirmed = await showBlurDialog(
+                                          context: context,
+                                          title: 'Delete Address',
+                                          description:
+                                              'Are you sure you want to delete this address?',
+                                          actionText: 'Delete',
+                                          icon: Icons.delete,
+                                        );
 
-                                          if (confirmed == true) {
-                                            final isDeleted =
-                                                await deleteAddressApi(
-                                                  savedAddresses[i].id,
-                                                );
+                                        if (confirmed == true) {
+                                          final isDeleted =
+                                              await deleteAddressApi(
+                                                savedAddresses[i].id,
+                                              );
 
-                                            if (isDeleted) {
-                                              setState(() {
-                                                savedAddresses.removeAt(i);
-                                                if (selectedAddressIndex == i) {
-                                                  selectedAddressIndex = -1;
-                                                } else if (selectedAddressIndex >
-                                                    i) {
-                                                  selectedAddressIndex -= 1;
-                                                }
-                                              });
-                                              showSuccessSnackbar(
-                                                context,
-                                                'Address deleted successfully',
-                                              );
-                                            } else {
-                                              showSuccessSnackbar(
-                                                context,
-                                                'Failed to delete address',
-                                              );
-                                            }
+                                          if (isDeleted) {
+                                            setState(() {
+                                              savedAddresses.removeAt(i);
+                                              if (selectedAddressIndex == i) {
+                                                selectedAddressIndex = -1;
+                                              } else if (selectedAddressIndex >
+                                                  i) {
+                                                selectedAddressIndex -= 1;
+                                              }
+                                            });
+                                            showSuccessSnackbar(
+                                              context,
+                                              'Address deleted successfully',
+                                            );
+                                          } else {
+                                            showSuccessSnackbar(
+                                              context,
+                                              'Failed to delete address',
+                                            );
                                           }
                                         }
                                       },
-
-                                      itemBuilder: (context) => [
-                                        PopupMenuItem(
-                                          value: 'edit',
-                                          child: Text('Edit'),
-                                        ),
-
-                                        PopupMenuItem(
-                                          value: 'delete',
-                                          child: Text('Delete'),
-                                        ),
-                                      ],
                                     ),
                                   ],
                                 ),
@@ -360,82 +341,6 @@ class _HelpCenterListState extends State<HelpCenterList> {
           ),
         );
       },
-    );
-  }
-
-  void _showEditAddressDialog(Address address, int index) {
-    final addressController = TextEditingController(text: address.address);
-    final localityController = TextEditingController(text: address.locality);
-    final landmarkController = TextEditingController(
-      text: address.landmark ?? '',
-    );
-    final floorController = TextEditingController(text: address.floor ?? '');
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: CustomColors.baseContainer,
-        title: const Text('Edit Address', textAlign: TextAlign.center),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              buildTextField(addressController, "Enter your address"),
-              const SizedBox(height: 8),
-              buildTextField(localityController, "Enter your locality"),
-              const SizedBox(height: 8),
-              buildTextField(landmarkController, "Landmark (optional)"),
-              const SizedBox(height: 8),
-              buildTextField(floorController, "Floor (optional)"),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: Colors.black)),
-          ),
-          TextButton(
-            onPressed: () async {
-              final updatedAddressRequest = AddressRequest(
-                address: addressController.text,
-                locality: localityController.text,
-                landmark: landmarkController.text,
-                floor: floorController.text,
-                lattitude: address.lat,
-                longitude: address.lng,
-              );
-
-              final isUpdated = await updateAddressApi(
-                address.id,
-                updatedAddressRequest,
-              );
-              print(isUpdated);
-              if (isUpdated) {
-                setState(() {
-                  savedAddresses[index] = Address(
-                    id: address.id,
-                    address: addressController.text,
-                    locality: localityController.text,
-                    lat: address.lat,
-                    lng: address.lng,
-                    floor: floorController.text,
-                    landmark: landmarkController.text,
-                  );
-                });
-                Navigator.pop(context);
-                showSuccessSnackbar(context, 'Address updated successfully');
-              } else {
-                showSuccessSnackbar(context, 'Failed to update address');
-              }
-            },
-            child: const Text(
-              'Save',
-              style: TextStyle(color: CustomColors.baseColor),
-            ),
-          ),
-        ],
-      ),
     );
   }
 

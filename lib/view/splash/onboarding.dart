@@ -1,77 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:pakket/controller/onboarding_controller.dart';
 import 'package:pakket/core/constants/color.dart';
 
-class OnboardingScreen extends StatefulWidget {
+class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
-}
-
-class _OnboardingScreenState extends State<OnboardingScreen> {
-  final PageController _pageController = PageController();
-  int _currentPage = 0;
-
-  final List<Map<String, String>> _onboardingData = [
-    {
-      'title': 'Buy Groceries Easily\nwith Us',
-      'description':
-          'It is a long established fact that a reader\nwill be distracted by the readable',
-      'image': 'assets/splash/grocery.png',
-    },
-    {
-      'title': 'Fresh Fruits & Vegetables\nDelivered Daily',
-      'description':
-          'Get farm-fresh fruits and vegetables\ndelivered to your doorstep.',
-      'image': 'assets/splash/veg-splash.png',
-    },
-    {
-      'title': 'Quick & Secure Delivery\nfor Non-Veg Items',
-      'description':
-          'Order fresh meat and seafood\nwith safe and fast delivery.',
-      'image': 'assets/splash/nonveg-splash.png',
-    },
-  ];
-
-  void _nextPage() {
-    if (_currentPage < _onboardingData.length - 1) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    } else {
-      Navigator.of(context).pushReplacementNamed('/signup');
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController.addListener(() {
-      final newPage = _pageController.page?.round() ?? 0;
-      if (newPage != _currentPage) {
-        setState(() => _currentPage = newPage);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final OnboardingController controller = Get.put(OnboardingController());
     final height = MediaQuery.of(context).size.height;
 
     return WillPopScope(
       onWillPop: () async {
-        SystemNavigator.pop(); // ✅ This will close the app
-        return false; // Prevents the default back navigation
+        SystemNavigator.pop(); // Exit the app
+        return false;
       },
       child: Scaffold(
         body: SafeArea(
@@ -80,17 +26,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               Column(
                 children: [
                   SizedBox(height: height * 0.05),
-                  _buildSkipButton(),
-                  SizedBox(
-                    height: height * 0.74,
-                    width: double.infinity,
-                    child: Image.asset(
-                      _onboardingData[_currentPage]['image']!,
-                      fit: BoxFit.cover,
+                  _buildSkipButton(controller),
+                  Obx(
+                    () => SizedBox(
+                      height: height * 0.74,
+                      width: double.infinity,
+                      child: Image.asset(
+                        controller.onboardingData[controller
+                            .currentPage
+                            .value]['image']!,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-
-                  SizedBox(),
                 ],
               ),
               Positioned(
@@ -103,7 +51,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 bottom: 45,
                 left: 15,
                 right: 15,
-                child: _buildBottomContent(),
+                child: _buildBottomContent(controller),
               ),
             ],
           ),
@@ -112,7 +60,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildSkipButton() {
+  Widget _buildSkipButton(controller) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -122,8 +70,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           backgroundColor: CustomColors.baseColor,
           child: IconButton(
             icon: const Icon(Icons.arrow_forward, color: Colors.white),
-            onPressed: () =>
-                Navigator.of(context).pushReplacementNamed('/signup'),
+            onPressed: controller.skip,
           ),
         ),
         const SizedBox(width: 18),
@@ -131,27 +78,40 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildBottomContent() {
+  Widget _buildBottomContent(controller) {
     return Column(
       children: [
+        // 👉 SmoothPageIndicator added here
         SmoothPageIndicator(
-          controller: _pageController,
-          count: _onboardingData.length,
+          controller: controller.pageController,
+          count: controller.onboardingData.length,
           effect: const JumpingDotEffect(
             dotColor: Colors.white54,
             activeDotColor: Colors.white,
             dotHeight: 8,
             dotWidth: 8,
           ),
+          onDotClicked: (index) {
+            controller.pageController.animateToPage(
+              index,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+            controller.currentPage.value = index;
+          },
         ),
+
         const SizedBox(height: 14),
         SizedBox(
           height: 120,
           child: PageView.builder(
-            controller: _pageController,
-            itemCount: _onboardingData.length,
+            controller: controller.pageController,
+            itemCount: controller.onboardingData.length,
+            onPageChanged: (index) {
+              controller.currentPage.value = index;
+            },
             itemBuilder: (context, index) {
-              final item = _onboardingData[index];
+              final item = controller.onboardingData[index];
               return _buildPage(item['title']!, item['description']!);
             },
           ),
@@ -162,7 +122,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           radius: 25,
           child: IconButton(
             icon: Icon(Icons.arrow_forward, color: CustomColors.baseColor),
-            onPressed: _nextPage,
+            onPressed: controller.nextPage,
           ),
         ),
       ],
