@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:pakket/getxcontroller/bottomnavbar_controller.dart';
 import 'package:pakket/model/order.dart';
 import 'package:pakket/controller/orderdetails.dart';
 import 'package:pakket/core/constants/color.dart';
@@ -29,13 +31,10 @@ class _OrderScreenState extends State<OrderScreen> {
         leading: IconButton(
           onPressed: () {
             if (widget.fromBottomNav) {
-              // If opened from bottom nav, switch tabs
-              if (widget.onBack != null) {
-                widget.onBack!();
-              }
+              final bottomNavController = Get.find<BottomNavController>();
+              bottomNavController.changeIndex(0);
             } else {
-              // If opened from product flow, pop the navigation stack
-              Navigator.pop(context);
+              Get.back();
             }
           },
           icon: Icon(Icons.arrow_back_ios),

@@ -1,18 +1,20 @@
+import 'dart:convert';
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:pakket/controller/cart.dart';
 import 'package:pakket/controller/orderplaced.dart';
 import 'package:pakket/core/constants/color.dart';
+import 'package:pakket/getxcontroller/bottomnavbar_controller.dart';
 import 'package:pakket/model/address.dart';
 import 'package:pakket/model/cartfetching.dart';
 import 'package:pakket/model/orderplaced.dart';
 import 'package:pakket/view/checkout/widgets/widget.dart';
 import 'package:pakket/view/checkout/widgets/address.dart';
 import 'package:pakket/view/checkout/widgets/beforecheckout.dart';
-import 'package:pakket/view/order.dart';
 import 'package:pakket/view/widget/bottomnavbar.dart';
 import 'package:pakket/view/widget/snackbar.dart';
+import 'package:http/http.dart' as http;
 
 class CheckoutPage extends StatefulWidget {
   final bool fromBottomNav;
@@ -25,6 +27,9 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
+  int? deliveryCharge;
+  bool isDeliveryLoading = false;
+
   String selectedFor = 'Myself';
   List<CartItemModelFetching> cartItems = [];
   bool isLoading = true;
@@ -35,6 +40,29 @@ class _CheckoutPageState extends State<CheckoutPage> {
   void initState() {
     super.initState();
     loadCartItems();
+  }
+
+  Future<void> fetchDeliveryCharge(String addressId) async {
+    try {
+      setState(() => isDeliveryLoading = true);
+      final url =
+          'https://pakket-dev.vercel.app/api/app/delivery/charge?addressId=$addressId';
+      final response = await http.get(Uri.parse(url));
+      print(response.body);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          deliveryCharge = (data['charge'] as num).toInt();
+          isDeliveryLoading = false;
+        });
+      } else {
+        throw Exception('Failed to fetch delivery charge');
+      }
+    } catch (e) {
+      setState(() => isDeliveryLoading = false);
+      print('Error fetching delivery charge: $e');
+      showSuccessSnackbar(context, 'Failed to fetch delivery charge');
+    }
   }
 
   List<CartItemModelFetching> mergeCartItems(
@@ -81,9 +109,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
     0,
     (sum, item) => sum + (item.offerPrice * item.quantity).toInt(),
   );
+  int get grandTotal => itemTotal + (deliveryCharge ?? 0);
 
-  int get deliveryCharge => 50;
-  int get grandTotal => itemTotal + deliveryCharge;
 
   //for address section
   void _showChangeAddressModal() {
@@ -97,6 +124,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
       builder: (context) => AddressModal(
         onAddressSelected: (address) {
           setState(() => _selectedAddress = address);
+          fetchDeliveryCharge(address.id);
         },
       ),
     );
@@ -116,16 +144,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
           icon: const Icon(Icons.arrow_back_ios),
           onPressed: () {
             if (widget.fromBottomNav) {
-              // If opened from bottom nav, switch tabs
-              if (widget.onBack != null) {
-                widget.onBack!();
-              }
+              final bottomNavController = Get.find<BottomNavController>();
+              bottomNavController.changeIndex(0);
             } else {
-              // If opened from product flow, pop the navigation stack
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => BottomNavScreen()),
-              );
+              Get.back();
             }
           },
         ),
@@ -312,7 +334,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
           SizedBox(height: 10),
           priceRow("Item total", "Rs. $itemTotal"),
           SizedBox(height: 10),
-          priceRow("Delivery charges", "Rs. $deliveryCharge"),
+          priceRow(
+            "Delivery charges",
+            isDeliveryLoading ? "Loading..." : "Rs. $deliveryCharge",
+          ),
           SizedBox(height: 10),
           const Divider(),
           SizedBox(height: 10),

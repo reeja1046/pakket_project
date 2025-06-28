@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:pakket/core/constants/color.dart';
+import 'package:pakket/getxcontroller/allgrocery_controller.dart';
 import 'package:pakket/getxcontroller/home_controller.dart';
 import 'package:pakket/view/allgrocery.dart';
 import 'package:pakket/view/home/widget.dart';
@@ -203,10 +204,24 @@ class HomeScreen extends StatelessWidget {
                         child: buildCategoryHeader(
                           context,
                           selectedCategoryName,
-                          'see All',
-                          () => Get.to(
-                            () => AllGroceryItems(title: selectedCategoryName),
-                          ),
+                          'See All',
+                          () {
+                            // First, put the controller with the selected tag
+                            Get.put(
+                              AllGroceryController(
+                                initialCategory: selectedCategoryName,
+                              ),
+                              tag: selectedCategoryName,
+                            );
+
+                            // Then navigate to the screen
+                            Get.to(
+                              () => AllGroceryItems(
+                                title: selectedCategoryName,
+                                fromBottomNav: false,
+                              ),
+                            );
+                          },
                         ),
                       ),
                       FutureBuilder(
