@@ -25,7 +25,7 @@ class _ProductDetailsState extends State<ProductDetails> {
   bool showMore = false;
   List<int> quantities = [];
 
-  late Future<ProductDetail> _productDetailFuture;
+  late Future<ProductDetail?> _productDetailFuture;
   late Future<List<Product>> _futureTrendingProducts;
 
   @override
@@ -59,7 +59,7 @@ class _ProductDetailsState extends State<ProductDetails> {
       backgroundColor: CustomColors.scaffoldBgClr,
       appBar: buildAppBar(context),
       body: SafeArea(
-        child: FutureBuilder<ProductDetail>(
+        child: FutureBuilder<ProductDetail?>(
           future: _productDetailFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -286,7 +286,7 @@ class _ProductDetailsState extends State<ProductDetails> {
                                       showProductOptionBottomSheet(
                                         context: context,
                                         product:
-                                            productDetail, // Make sure this is the correct ProductDetail object
+                                            productDetail!, // Make sure this is the correct ProductDetail object
                                       );
                                     },
                                     child: Container(

@@ -1,66 +1,35 @@
-import 'dart:convert';
 import 'dart:math';
-import 'package:http/http.dart' as http;
+import 'package:pakket/controller/token_checking_helper.dart';
 import 'package:pakket/model/allcategory.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+/// Fetch random products (shuffled, limited by maxCount)
 Future<List<CategoryProduct>> fetchRandomProducts(int maxCount) async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('token') ?? '';
+  final data = await getRequest('https://pakket-dev.vercel.app/api/app/product');
 
-  final response = await http.get(
-    Uri.parse('https://pakket-dev.vercel.app/api/app/product'),
-    headers: {
-      'Authorization': 'Bearer $token',
-      'Content-Type': 'application/json',
-    },
-  );
+  if (data == null) return []; // token expired handled globally
 
-  if (response.statusCode == 200) {
-    final decoded = jsonDecode(response.body);
+  if (data['success'] == true && data['products'] is List) {
+    final List<dynamic> products = data['products'];
+    List<CategoryProduct> allProducts =
+        products.map((e) => CategoryProduct.fromJson(e)).toList();
 
-    if (decoded['success'] == true && decoded['products'] is List) {
-      final List<dynamic> data = decoded['products'];
-      List<CategoryProduct> allProducts = data
-          .map((e) => CategoryProduct.fromJson(e))
-          .toList();
-
-      allProducts.shuffle(Random());
-      return allProducts.take(min(maxCount, allProducts.length)).toList();
-    } else {
-      throw Exception('API returned no products or malformed response');
-    }
+    allProducts.shuffle(Random());
+    return allProducts.take(min(maxCount, allProducts.length)).toList();
   } else {
-    throw Exception('Failed to load products');
+    throw Exception('API returned no products or malformed response');
   }
 }
 
+/// Fetch all products
 Future<List<CategoryProduct>> fetchAllProducts() async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('token') ?? '';
+  final data = await getRequest('https://pakket-dev.vercel.app/api/app/product');
 
-  final response = await http.get(
-    Uri.parse('https://pakket-dev.vercel.app/api/app/product'),
-    headers: {
-      'Authorization': 'Bearer $token',
-      'Content-Type': 'application/json',
-    },
-  );
+  if (data == null) return [];
 
-  if (response.statusCode == 200) {
-    final decoded = jsonDecode(response.body);
-
-    if (decoded['success'] == true && decoded['products'] is List) {
-      final List<dynamic> data = decoded['products'];
-      List<CategoryProduct> allProducts =
-          data.map((e) => CategoryProduct.fromJson(e)).toList();
-
-      return allProducts; // Return all products directly
-    } else {
-      throw Exception('API returned no products or malformed response');
-    }
+  if (data['success'] == true && data['products'] is List) {
+    final List<dynamic> products = data['products'];
+    return products.map((e) => CategoryProduct.fromJson(e)).toList();
   } else {
-    throw Exception('Failed to load products');
+    throw Exception('API returned no products or malformed response');
   }
 }
-

@@ -95,7 +95,7 @@ class _AddressModalState extends State<AddressModal> {
     try {
       var response = await checkLocationServiceability(mapUrl);
 
-      if (response['isDeliverable'] == true) {
+      if (response?['isDeliverable'] == true) {
         setState(() {
           isVerified = true; // Set verification flag
         });

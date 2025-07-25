@@ -1,26 +1,10 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:pakket/controller/token_checking_helper.dart';
 import 'package:pakket/model/product.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-Future<ProductDetail> fetchProductDetail(String productId) async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('token') ?? '';
+Future<ProductDetail?> fetchProductDetail(String productId) async {
+  final data = await getRequest('https://pakket-dev.vercel.app/api/app/product/$productId');
 
-  final response = await http.get(
-    Uri.parse('https://pakket-dev.vercel.app/api/app/product/$productId'),
-    headers: {
-      'Authorization': 'Bearer $token',
-      'Content-Type': 'application/json',
-    },
-  );
+  if (data == null) return null; // token expired handled globally
 
-  if (response.statusCode == 200) {
-    final data = json.decode(response.body);
-    return ProductDetail.fromJson(data['product']);
-  } else {
-    throw Exception('Failed to load product details');
-  }
+  return ProductDetail.fromJson(data['product']);
 }
-
-

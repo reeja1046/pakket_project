@@ -1,49 +1,24 @@
+import 'package:pakket/controller/token_checking_helper.dart';
 import 'package:pakket/model/order.dart';
 import 'package:pakket/model/orderfetch.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
-Future<OrderDetail> fetchOrderDetail(String orderId) async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('token') ?? '';
-
-  final url = 'https://pakket-dev.vercel.app/api/app/order/$orderId';
-  final response = await http.get(
-    Uri.parse(url),
-    headers: {
-      'Authorization': 'Bearer $token',
-      'Content-Type': 'application/json',
-    },
+/// Fetch order details
+Future<OrderDetail?> fetchOrderDetail(String orderId) async {
+  final data = await getRequest(
+    'https://pakket-dev.vercel.app/api/app/order/$orderId',
   );
 
-  print(response.body);
-  print('000000000000000000000');
-  if (response.statusCode == 200) {
-    final data = json.decode(response.body);
+  if (data == null) return null; // token expired handled globally
 
-    return OrderDetail.fromJson(data['order']);
-  } else {
-    throw Exception('Failed to load order');
-  }
+  return OrderDetail.fromJson(data['order']);
 }
 
+/// Fetch all orders
 Future<List<Order>> fetchOrders() async {
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('token') ?? '';
+  final data = await getRequest('https://pakket-dev.vercel.app/api/app/order');
 
-  final response = await http.get(
-    Uri.parse('https://pakket-dev.vercel.app/api/app/order'),
-    headers: {
-      'Authorization': 'Bearer $token',
-      'Content-Type': 'application/json',
-    },
-  );
-  if (response.statusCode == 200) {
-    final data = json.decode(response.body);
-    final List orders = data['orders'];
-    return orders.map((json) => Order.fromJson(json)).toList();
-  } else {
-    throw Exception('Failed to load orders');
-  }
+  if (data == null) return []; // token expired handled globally
+
+  final List orders = data['orders'];
+  return orders.map((json) => Order.fromJson(json)).toList();
 }

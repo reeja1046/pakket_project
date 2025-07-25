@@ -335,7 +335,7 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
                                           showProductOptionBottomSheet(
                                             context: context,
                                             product:
-                                                productDetail, // Make sure this is the correct ProductDetail object
+                                                productDetail!, // Make sure this is the correct ProductDetail object
                                           );
                                         },
                                         child: const Text(

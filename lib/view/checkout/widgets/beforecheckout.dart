@@ -157,7 +157,7 @@ class _CheckoutDealsSectionState extends State<CheckoutDealsSection> {
                                               );
                                           await showProductOptionBottomSheet(
                                             context: context,
-                                            product: productDetail,
+                                            product: productDetail!,
                                           ).then((_) {
                                             widget
                                                 .onProductAdded(); // Now runs after the sheet closes

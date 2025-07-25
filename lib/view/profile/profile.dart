@@ -14,7 +14,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  late Future<Profile> profileFuture;
+  late Future<Profile?> profileFuture;
 
   @override
   void initState() {
@@ -47,7 +47,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ),
-      body: FutureBuilder<Profile>(
+      body: FutureBuilder<Profile?>(
         future: profileFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {

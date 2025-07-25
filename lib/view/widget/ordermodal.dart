@@ -17,7 +17,7 @@ class OrderDetailModal extends StatelessWidget {
       minChildSize: 0.5,
       maxChildSize: 0.95,
       builder: (context, scrollController) {
-        return FutureBuilder<OrderDetail>(
+        return FutureBuilder<OrderDetail?>(
           future: fetchOrderDetail(orderId),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {

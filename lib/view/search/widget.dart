@@ -90,7 +90,7 @@ Widget buildProductCard(dynamic product, BuildContext context) {
                 showProductOptionBottomSheet(
                   context: context,
                   product:
-                      productDetail, // Make sure this is the correct ProductDetail object
+                      productDetail!, // Make sure this is the correct ProductDetail object
                 );
               },
 
