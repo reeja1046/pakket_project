@@ -1,15 +1,19 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:pakket/controller/herobanner.dart';
+import 'package:get/get.dart';
 import 'package:pakket/controller/product.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/model/allcategory.dart';
-import 'package:pakket/model/herobanner.dart';
 import 'package:pakket/model/trending.dart';
 import 'package:pakket/view/product/productdetails.dart';
 import 'package:pakket/view/widget/modal.dart';
 
-Widget buildHeader(BuildContext context, currentAddress1, currentAddress2) {
+Widget buildHeader(
+  BuildContext context,
+  RxString locationStatus,
+  String currentAddress1,
+  String currentAddress2,
+) {
   final height = MediaQuery.of(context).size.height;
 
   return Column(
@@ -40,20 +44,28 @@ Widget buildHeader(BuildContext context, currentAddress1, currentAddress2) {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                currentAddress1,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
+              if (locationStatus == 'fetching' ||
+                  locationStatus == 'error') ...[
+                const Text(
+                  'Fetching location...',
+                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
                 ),
-              ),
-              Text(
-                currentAddress2,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
+              ] else ...[
+                Text(
+                  currentAddress1,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                  ),
                 ),
-              ),
+                Text(
+                  currentAddress2,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
             ],
           ),
           const SizedBox(width: 5),
@@ -66,110 +78,113 @@ Widget buildHeader(BuildContext context, currentAddress1, currentAddress2) {
   );
 }
 
-class ScrollCardCarousel extends StatefulWidget {
-  const ScrollCardCarousel({super.key});
+// class ScrollCardCarousel extends StatefulWidget {
+//   const ScrollCardCarousel({super.key});
 
-  @override
-  State<ScrollCardCarousel> createState() => _ScrollCardCarouselState();
-}
+//   @override
+//   State<ScrollCardCarousel> createState() => _ScrollCardCarouselState();
+// }
 
-class _ScrollCardCarouselState extends State<ScrollCardCarousel> {
-  late PageController controller;
-  int currentIndex = 0;
-  Timer? timer;
+// class _ScrollCardCarouselState extends State<ScrollCardCarousel> {
+//   late PageController controller;
+//   int currentIndex = 0;
+//   Timer? timer;
 
-  @override
-  void initState() {
-    super.initState();
-    controller = PageController(viewportFraction: 0.85);
-  }
+//   @override
+//   void initState() {
+//     super.initState();
+//     controller = PageController(viewportFraction: 0.85);
+//   }
 
-  @override
-  void dispose() {
-    controller.dispose();
-    timer?.cancel();
-    super.dispose();
-  }
+//   @override
+//   void dispose() {
+//     controller.dispose();
+//     timer?.cancel();
+//     super.dispose();
+//   }
 
-  void startAutoScroll(List<HeroBanner> banners) {
-    timer?.cancel();
-    timer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (controller.hasClients) {
-        if (currentIndex < banners.length - 1) {
-          currentIndex++;
-        } else {
-          currentIndex = 0;
-        }
-        controller.animateToPage(
-          currentIndex,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        );
-      }
-    });
-  }
+//   void startAutoScroll(List<HeroBanner> banners) {
+//     timer?.cancel();
+//     timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+//       if (controller.hasClients) {
+//         if (currentIndex < banners.length - 1) {
+//           currentIndex++;
+//         } else {
+//           currentIndex = 0;
+//         }
+//         controller.animateToPage(
+//           currentIndex,
+//           duration: const Duration(milliseconds: 500),
+//           curve: Curves.easeInOut,
+//         );
+//       }
+//     });
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<List<HeroBanner>>(
-      future: fetchHeroBanners(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SizedBox(
-            height: 240,
-            child: Center(child: CircularProgressIndicator()),
-          );
-        } else if (snapshot.hasError) {
-          return const SizedBox(
-            height: 240,
-            child: Center(child: Text('Failed to load banners')),
-          );
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const SizedBox(
-            height: 240,
-            child: Center(child: Text('No banners available')),
-          );
-        }
+//   @override
+//   Widget build(BuildContext context) {
+//     return FutureBuilder<List<HeroBanner>>(
+//       future: fetchHeroBanners(),
+//       builder: (context, snapshot) {
+//         if (snapshot.connectionState == ConnectionState.waiting) {
+//           return const SizedBox(
+//             height: 240,
+//             child: Center(child: CircularProgressIndicator()),
+//           );
+//         } else if (snapshot.hasError) {
+//           return const SizedBox(
+//             height: 240,
+//             child: Center(child: Text('Failed to load banners')),
+//           );
+//         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+//           return const SizedBox(
+//             height: 240,
+//             child: Center(child: Text('No banners available')),
+//           );
+//         }
 
-        final banners = snapshot.data!;
-        startAutoScroll(banners);
+//         final banners = snapshot.data!;
+//         startAutoScroll(banners);
 
-        return buildScrollCard(context, banners);
-      },
-    );
-  }
+//         return buildScrollCard(context, banners);
+//       },
+//     );
+//   }
 
-  Widget buildScrollCard(BuildContext context, List<HeroBanner> banners) {
-    return SizedBox(
-      height: 240,
-      child: PageView.builder(
-        controller: controller,
-        itemCount: banners.length,
-        onPageChanged: (index) {
-          currentIndex = index;
-        },
-        itemBuilder: (context, index) {
-          final banner = banners[index];
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                banner.url,
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const Icon(Icons.error),
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return const Center(child: CircularProgressIndicator());
-                },
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
+//   Widget buildScrollCard(BuildContext context, List<HeroBanner> banners) {
+//     return SizedBox(
+//       height: 240,
+//       child: PageView.builder(
+//         controller: controller,
+//         itemCount: banners.length,
+//         onPageChanged: (index) {
+//           currentIndex = index;
+//         },
+//         itemBuilder: (context, index) {
+//           final banner = banners[index];
+//           return GestureDetector(
+//             onTap: () => Get.find<BottomNavController>().changeIndex(1),
+//             child: Padding(
+//               padding: const EdgeInsets.symmetric(horizontal: 4.0),
+//               child: ClipRRect(
+//                 borderRadius: BorderRadius.circular(12),
+//                 child: Image.network(
+//                   banner.url,
+//                   fit: BoxFit.contain,
+//                   errorBuilder: (_, __, ___) => const Icon(Icons.error),
+//                   loadingBuilder: (context, child, loadingProgress) {
+//                     if (loadingProgress == null) return child;
+//                     return const Center(child: CircularProgressIndicator());
+//                   },
+//                 ),
+//               ),
+//             ),
+//           );
+//         },
+//       ),
+//     );
+//   }
+// }
 
 Widget buildCategoryHeader(
   BuildContext context,
@@ -294,7 +309,12 @@ Widget showTrendingProduct(Future<List<Product>> trendingProducts) {
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14.0),
-              child: buildCategoryHeader(context, 'Trending Offers', '', () {}),
+              child: buildCategoryHeader(
+                context,
+                'Trending Products',
+                '',
+                () {},
+              ),
             ),
             const SizedBox(height: 10),
             SingleChildScrollView(
@@ -379,6 +399,7 @@ Widget showTrendingProduct(Future<List<Product>> trendingProducts) {
                                   width: 80,
                                   child: ElevatedButton(
                                     style: ElevatedButton.styleFrom(
+                                      elevation: 0,
                                       backgroundColor: CustomColors.baseColor,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(5),

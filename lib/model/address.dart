@@ -1,16 +1,18 @@
 class AddressRequest {
   String address;
   String locality;
-  String? googleMapLink;
+  // String? googleMapLink;
   String? landmark;
+  String? pincode;
   String? floor;
   double? lattitude;
   double? longitude;
   AddressRequest({
     required this.address,
     required this.locality,
-    this.googleMapLink,
+    // this.googleMapLink,
     this.landmark,
+    this.pincode,
     this.floor,
     this.lattitude,
     this.longitude,
@@ -19,8 +21,8 @@ class AddressRequest {
   Map<String, dynamic> toJson() {
     final data = {'address': address, 'locality': locality};
 
-    if (googleMapLink != null && googleMapLink!.isNotEmpty) {
-      data['mapUrl'] = googleMapLink!;
+    if (pincode != null && pincode!.isNotEmpty) {
+      data['pincode'] = pincode!;
     }
     if (landmark != null && landmark!.isNotEmpty) {
       data['landmark'] = landmark!;

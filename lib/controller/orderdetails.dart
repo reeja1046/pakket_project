@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 Future<OrderDetail> fetchOrderDetail(String orderId) async {
-  print(orderId);
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('token') ?? '';
 
@@ -17,12 +16,11 @@ Future<OrderDetail> fetchOrderDetail(String orderId) async {
       'Content-Type': 'application/json',
     },
   );
-  print('....................................');
+
   print(response.body);
-  print('....................................');
+  print('000000000000000000000');
   if (response.statusCode == 200) {
     final data = json.decode(response.body);
-    print(data['order']['items']);
 
     return OrderDetail.fromJson(data['order']);
   } else {
@@ -31,7 +29,6 @@ Future<OrderDetail> fetchOrderDetail(String orderId) async {
 }
 
 Future<List<Order>> fetchOrders() async {
-  print('///////////');
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('token') ?? '';
 

@@ -8,7 +8,6 @@ import 'package:pakket/model/allcategory.dart';
 import 'package:pakket/controller/category.dart';
 import 'package:pakket/view/product/productdetails.dart';
 import 'package:pakket/view/search/search.dart';
-import 'package:pakket/view/widget/bottomnavbar.dart';
 import 'package:pakket/view/widget/modal.dart';
 
 class AllGroceryItems extends StatefulWidget {
@@ -129,6 +128,13 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
           ),
           const SizedBox(width: 10),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            color: Colors.grey.withOpacity(0.3), // Border color
+            height: 1,
+          ),
+        ),
       ),
       body: SafeArea(
         child: Row(
@@ -233,7 +239,7 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
                               crossAxisCount: 2,
                               crossAxisSpacing: 10,
                               mainAxisSpacing: 10,
-                              childAspectRatio: 0.5,
+                              childAspectRatio: 0.535,
                             ),
                         itemBuilder: (context, index) {
                           final product = products[index];
@@ -312,6 +318,7 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
                                       width: 80,
                                       child: ElevatedButton(
                                         style: ElevatedButton.styleFrom(
+                                          elevation: 0,
                                           backgroundColor:
                                               CustomColors.baseColor,
                                           shape: RoundedRectangleBorder(

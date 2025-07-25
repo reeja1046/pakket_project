@@ -21,6 +21,7 @@ class CarouselHomeController extends GetxController {
   void fetchBanners() async {
     try {
       final data = await fetchHeroBanners();
+     
       if (data.isNotEmpty) {
         banners.assignAll(data);
         startAutoScroll();

@@ -5,9 +5,8 @@ class OrderDetail {
   final Address address;
   final List<OrderItem> items;
   final double totalPrice;
-  final double deliveryCharge;
+  final int deliveryCharge;
   final String note;
-  
 
   OrderDetail({
     required this.orderId,
@@ -30,7 +29,7 @@ class OrderDetail {
         json['items'].map((x) => OrderItem.fromJson(x)),
       ),
       totalPrice: (json['totalPrice'] as num).toDouble(),
-      deliveryCharge: 50,
+      deliveryCharge: json['deliveryCharge'],
       note: json['note'] ?? '',
     );
   }

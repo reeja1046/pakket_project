@@ -153,8 +153,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             });
                           },
                           validator: (value) {
-                            if (value!.trim().isEmpty)
+                            if (value!.trim().isEmpty) {
                               return "Confirm your password";
+                            }
+
                             if (value.trim() !=
                                 passwordController.text.trim()) {
                               return "Passwords do not match";
@@ -184,6 +186,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       'phonenumber',
                                       phoneController.text,
                                     );
+
                                     // Proceed with form submission
                                     signUp(
                                       nameController.text.trim(),

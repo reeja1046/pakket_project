@@ -26,12 +26,8 @@ Future<CartResponseModel?> addToCart({
 
   try {
     final response = await http.post(url, headers: headers, body: body);
-    print(response.statusCode);
-    print(response.body);
-    print('------------------=============------------');
     if (response.statusCode == 200) {
       final json = jsonDecode(response.body);
-      print(json);
       return CartResponseModel.fromJson(json);
     } else {
       print('Errorponse.statusCode}sponse');

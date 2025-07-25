@@ -13,8 +13,7 @@ class BottomNavScreen extends StatelessWidget {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-   AllGroceryItems(title: 'All items', fromBottomNav: true),
-
+    AllGroceryItems(title: 'All items', fromBottomNav: true),
     CheckoutPage(fromBottomNav: true),
     OrderScreen(fromBottomNav: true),
   ];
@@ -33,9 +32,15 @@ class BottomNavScreen extends StatelessWidget {
         body: Obx(
           () => IndexedStack(
             index: controller.selectedIndex.value,
-            children: _screens,
+            children: [
+              KeyedSubtree(key: controller.keys[0], child: _screens[0]),
+              KeyedSubtree(key: controller.keys[1], child: _screens[1]),
+              KeyedSubtree(key: controller.keys[2], child: _screens[2]),
+              KeyedSubtree(key: controller.keys[3], child: _screens[3]),
+            ],
           ),
         ),
+
         bottomNavigationBar: Obx(
           () => BottomNavigationBar(
             backgroundColor: Colors.white,

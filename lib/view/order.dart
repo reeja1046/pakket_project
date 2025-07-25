@@ -39,6 +39,13 @@ class _OrderScreenState extends State<OrderScreen> {
           },
           icon: Icon(Icons.arrow_back_ios),
         ),
+         bottom: PreferredSize(
+    preferredSize: const Size.fromHeight(1),
+    child: Container(
+      color: Colors.grey.withOpacity(0.3), // Border color
+      height: 1,
+    ),
+  ),
       ),
       body: SafeArea(
         child: Padding(

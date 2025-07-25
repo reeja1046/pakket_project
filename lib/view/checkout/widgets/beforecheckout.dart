@@ -7,7 +7,9 @@ import 'package:pakket/view/product/productdetails.dart';
 import 'package:pakket/view/widget/modal.dart';
 
 class CheckoutDealsSection extends StatefulWidget {
-  const CheckoutDealsSection({super.key});
+  final VoidCallback onProductAdded;
+
+  const CheckoutDealsSection({super.key, required this.onProductAdded});
 
   @override
   State<CheckoutDealsSection> createState() => _CheckoutDealsSectionState();
@@ -153,11 +155,13 @@ class _CheckoutDealsSectionState extends State<CheckoutDealsSection> {
                                               await fetchProductDetail(
                                                 product.id,
                                               );
-                                          showProductOptionBottomSheet(
+                                          await showProductOptionBottomSheet(
                                             context: context,
-                                            product:
-                                                productDetail, // Make sure this is the correct ProductDetail object
-                                          );
+                                            product: productDetail,
+                                          ).then((_) {
+                                            widget
+                                                .onProductAdded(); // Now runs after the sheet closes
+                                          });
                                         },
                                         child: Container(
                                           width: 60,
@@ -192,7 +196,6 @@ class _CheckoutDealsSectionState extends State<CheckoutDealsSection> {
                 },
               ),
             ),
-            SizedBox(height: MediaQuery.of(context).size.height * 0.05),
           ],
         ),
       ),

@@ -26,7 +26,9 @@ class OnboardingScreen extends StatelessWidget {
               Column(
                 children: [
                   SizedBox(height: height * 0.05),
+
                   _buildSkipButton(controller),
+                  SizedBox(height: height * 0.02),
                   Obx(
                     () => SizedBox(
                       height: height * 0.74,

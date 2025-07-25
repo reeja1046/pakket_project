@@ -1,7 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:pakket/controller/profile.dart';
 import 'package:pakket/core/constants/color.dart';
-import 'package:pakket/view/profile/widget.dart';
+import 'package:pakket/model/profile.dart';
+import 'package:pakket/view/profile/helpcenter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -12,19 +14,12 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String phonenumber = '';
+  late Future<Profile> profileFuture;
+
   @override
   void initState() {
-    getphone();
     super.initState();
-  }
-
-  getphone() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      phonenumber = prefs.getString('phonenumber') ?? '';
-    });
-    print(phonenumber);
+    profileFuture = fetchProfileData();
   }
 
   @override
@@ -44,61 +39,85 @@ class _ProfileScreenState extends State<ProfileScreen> {
           icon: Icon(Icons.arrow_back_ios),
         ),
         centerTitle: true,
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            color: Colors.grey.withOpacity(0.3), // Border color
+            height: 1,
+          ),
+        ),
       ),
-      body: SingleChildScrollView(
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Your Profile details',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      phonenumber.isNotEmpty ? phonenumber : 'Add phone number',
-                      style: TextStyle(color: Color(0xFF636260)),
-                    ),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.05),
-                    Text(
-                      'Your information',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+      body: FutureBuilder<Profile>(
+        future: profileFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (snapshot.hasData) {
+            final profile = snapshot.data!;
+            return buildProfileContent(context, profile);
+          } else {
+            return const Center(child: Text('No profile data found.'));
+          }
+        },
+      ),
+    );
+  }
 
-              Divider(height: 0),
-              HelpCenterList(),
-              SizedBox(height: 80),
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    showBlurDialog(context);
-                  },
-                  child: Text(
-                    'Logout',
+  Widget buildProfileContent(BuildContext context, Profile profile) {
+    return SingleChildScrollView(
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Your Profile details',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'Welcome back ${profile.userName}',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                       fontSize: 16,
                     ),
                   ),
+
+                  SizedBox(height: 6),
+                  Text(
+                    profile.phoneNumber.isNotEmpty
+                        ? profile.phoneNumber
+                        : 'Add phone number',
+                    style: TextStyle(color: Colors.black, fontSize: 15),
+                  ),
+                ],
+              ),
+            ),
+            HelpCenterList(),
+            SizedBox(height: 80),
+            Center(
+              child: TextButton(
+                onPressed: () {
+                  showBlurDialog(context);
+                },
+                child: Text(
+                  'Logout',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                    fontSize: 16,
+                  ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -155,32 +174,52 @@ void showBlurDialog(BuildContext context) {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        TextButton(
-                          onPressed: () async {
-                            final prefs = await SharedPreferences.getInstance();
-                            await prefs.clear();
-                            Navigator.of(context).pushNamedAndRemoveUntil(
-                              '/signin',
-                              (route) => false,
-                            );
-                          },
-                          child: const Text(
-                            'Yes',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            color: Colors.white,
+                          ),
+                          height: 35,
+                          width: 60,
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: const Text(
+                              'No',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: CustomColors.baseColor,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: const Text(
-                            'No',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
+                        SizedBox(width: 10),
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(4),
+                            color: Colors.white,
+                          ),
+                          height: 35,
+                          width: 60,
+                          child: TextButton(
+                            onPressed: () async {
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              await prefs.clear();
+                              Navigator.of(context).pushNamedAndRemoveUntil(
+                                '/signin',
+                                (route) => false,
+                              );
+                            },
+                            child: const Text(
+                              'Yes',
+                              style: TextStyle(
+                                color: CustomColors.baseColor,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),

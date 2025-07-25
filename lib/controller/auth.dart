@@ -15,7 +15,7 @@ Future<void> signUp(
   context,
 ) async {
   const url = 'https://pakket-dev.vercel.app/api/app/register';
-  
+
   try {
     final response = await http.post(
       Uri.parse(url),
@@ -28,18 +28,16 @@ Future<void> signUp(
       }),
     );
     final data = jsonDecode(response.body);
-    print(response.statusCode);
     if (response.statusCode == 200 || response.statusCode == 201) {
       final token = data['token'];
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', token);
+      await prefs.setBool('isSignedUp', true);
       _showBlurDialog(context);
-    } else {
-      if (data['message'] == 'Phone number already exists.') {
-        showSuccessSnackbar(context, data['message']);
-      } else {
-        showSuccessSnackbar(context, data['error']);
-      }
+    } else if (data['message'] == 'Phone number already exists.') {
+      showSuccessSnackbar(context, data['message']);
+    } else if (data['message'] == 'Email already exists.') {
+      showSuccessSnackbar(context, data['message']);
     }
   } catch (e) {
     showSuccessSnackbar(context, 'Something went wrong. Please try again');

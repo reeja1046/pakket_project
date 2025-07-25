@@ -10,7 +10,7 @@ class OnboardingController extends GetxController {
     {
       'title': 'Buy Groceries Easily\nwith Us',
       'description':
-          'It is a long established fact that a reader\nwill be distracted by the readable',
+          'Get fresh groceries delivered when and where you need them.',
       'image': 'assets/splash/grocery.png',
     },
     {

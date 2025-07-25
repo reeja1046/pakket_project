@@ -14,10 +14,12 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   var selectedCategoryIndex = 0.obs;
   var currentAddressLine1 = 'Fetching location...'.obs;
   var currentAddressLine2 = ''.obs;
+  var locationStatus = 'fetching'.obs; // 'fetching', 'fetched', 'error'
 
   var categories = <Category>[].obs;
   var selectedCategoryProducts = Future.value(<CategoryProduct>[]).obs;
   var trendingProducts = Future.value(<Product>[]).obs;
+  var isAllDataLoaded = false.obs;
 
   bool isDialogVisible = false;
 
@@ -25,14 +27,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
   void onInit() {
     WidgetsBinding.instance.addObserver(this);
     super.onInit();
-    getCurrentLocation();
-    trendingProducts.value = fetchTrendingProducts();
-    fetchCategories().then((fetchedCategories) {
-      categories.value = fetchedCategories;
-      if (fetchedCategories.isNotEmpty) {
-        setSelectedCategory(fetchedCategories[selectedCategoryIndex.value]);
-      }
-    });
+    loadInitialData();
   }
 
   @override
@@ -53,8 +48,34 @@ class HomeController extends GetxController with WidgetsBindingObserver {
     }
   }
 
+  Future<void> loadInitialData() async {
+    if (isAllDataLoaded.value) return;
+    isAllDataLoaded.value = false;
+
+    try {
+      await getCurrentLocation();
+
+      final trendingFuture = fetchTrendingProducts();
+      final categoriesList = await fetchCategories();
+
+      trendingProducts.value = trendingFuture;
+      categories.value = categoriesList;
+
+      if (categoriesList.isNotEmpty) {
+        setSelectedCategory(categoriesList[selectedCategoryIndex.value]);
+      }
+
+      isAllDataLoaded.value = true;
+    } catch (e) {
+      print('Error in loading home data: $e');
+      isAllDataLoaded.value =
+          true; // Show fallback UI instead of infinite loader
+    }
+  }
+
   Future<void> getCurrentLocation() async {
     try {
+      locationStatus.value = 'fetching';
       Position position = await determinePosition();
       double lat = position.latitude;
       double lon = position.longitude;
@@ -67,9 +88,12 @@ class HomeController extends GetxController with WidgetsBindingObserver {
             '${place.locality ?? ''}, ${place.administrativeArea ?? ''}';
         currentAddressLine1.value = addressLine2;
         currentAddressLine2.value = addressLine1;
+        locationStatus.value = 'fetched';
       }
     } catch (e) {
-      currentAddressLine1.value = 'Failed to get location';
+      print(e);
+      locationStatus.value = 'error';
+      currentAddressLine1.value = 'Fetching location...'; // fallback
     }
   }
 
@@ -99,7 +123,8 @@ class HomeController extends GetxController with WidgetsBindingObserver {
 
     if (permission == LocationPermission.deniedForever) {
       return Future.error(
-          'Location permissions are permanently denied, we cannot request permissions.');
+        'Location permissions are permanently denied, we cannot request permissions.',
+      );
     }
 
     return await Geolocator.getCurrentPosition();

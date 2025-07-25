@@ -46,7 +46,7 @@ class _PhoneNumberScreenState extends State<PhoneNumberScreen> {
       );
 
       final data = jsonDecode(response.body);
-
+      print(data);
       if (response.statusCode == 200 && data['success'] == true) {
         // Navigate to OTP screen and pass phone number
         Navigator.of(context).pushReplacement(

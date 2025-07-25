@@ -13,21 +13,23 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    checkLoginStatus();
+    checkAuthStatus();
   }
 
-  void checkLoginStatus() async {
+  void checkAuthStatus() async {
     final prefs = await SharedPreferences.getInstance();
+    final isSignedUp = prefs.getBool('isSignedUp') ?? false;
     final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
 
-    // Optional: Add a small splash delay
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 2)); // Optional splash delay
 
-    if (isLoggedIn) {
+    if (isSignedUp || isLoggedIn) {
+      // Either signed up or logged in → go to BottomNavScreen
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => BottomNavScreen()),
       );
     } else {
+      // Neither signed up nor logged in → go to onboarding
       Navigator.of(context).pushReplacementNamed('/onboarding');
     }
   }

@@ -95,6 +95,13 @@ class _SearchDetailsState extends State<SearchDetails> {
           icon: const Icon(Icons.arrow_back_ios),
           onPressed: () => Navigator.pop(context),
         ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+            color: Colors.grey.withOpacity(0.3), // Border color
+            height: 1,
+          ),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -138,20 +145,20 @@ class _SearchDetailsState extends State<SearchDetails> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Container(
-                    height: 45,
-                    width: 50,
-                    decoration: BoxDecoration(
-                      color: CustomColors.baseColor,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: IconButton(
-                      onPressed: () => _searchProducts(searchController.text),
-                      icon: Image.asset('assets/home/setting-4.png'),
-                      padding: EdgeInsets.zero,
-                    ),
-                  ),
+                  // const SizedBox(width: 10),
+                  // Container(
+                  //   height: 45,
+                  //   width: 50,
+                  //   decoration: BoxDecoration(
+                  //     color: CustomColors.baseColor,
+                  //     borderRadius: BorderRadius.circular(10),
+                  //   ),
+                  //   child: IconButton(
+                  //     onPressed: () => _searchProducts(searchController.text),
+                  //     icon: Image.asset('assets/home/setting-4.png'),
+                  //     padding: EdgeInsets.zero,
+                  //   ),
+                  // ),
                 ],
               ),
               const SizedBox(height: 20),

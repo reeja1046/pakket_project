@@ -79,6 +79,7 @@ Widget buildProductCard(dynamic product, BuildContext context) {
             width: MediaQuery.of(context).size.width * 0.3,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
+                elevation: 0,
                 backgroundColor: CustomColors.baseColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5),

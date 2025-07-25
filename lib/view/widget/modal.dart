@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:pakket/controller/cart.dart';
 import 'package:pakket/model/product.dart';
-import 'package:pakket/view/checkout/checkout.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/view/widget/snackbar.dart';
 
-void showProductOptionBottomSheet({
+Future<void> showProductOptionBottomSheet({
   required BuildContext context,
   required ProductDetail product,
 }) {
   List<int> quantities = List.filled(product.options.length, 0);
 
-  showModalBottomSheet(
+  return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -218,12 +217,12 @@ class _OptionBottomSheetContentState extends State<_OptionBottomSheetContent> {
                   showSuccessSnackbar(context, 'Added to cart successfully!');
 
                   Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => CheckoutPage(fromBottomNav: false),
-                    ),
-                  );
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (_) => CheckoutPage(fromBottomNav: false),
+                  //   ),
+                  // );
                 } else {
                   Navigator.of(context).pop();
                   showSuccessSnackbar(

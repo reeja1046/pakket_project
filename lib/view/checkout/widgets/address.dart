@@ -1,6 +1,8 @@
 import 'dart:ui';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:pakket/controller/map.dart';
+import 'package:pakket/controller/pincode.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/controller/address.dart';
 import 'package:pakket/model/address.dart';
@@ -9,9 +11,14 @@ import 'package:pakket/view/widget/snackbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AddressModal extends StatefulWidget {
+  final Address? selectedAddress; // Accept selected address
   final Function(Address) onAddressSelected;
 
-  const AddressModal({super.key, required this.onAddressSelected});
+  const AddressModal({
+    super.key,
+    required this.onAddressSelected,
+    this.selectedAddress,
+  });
 
   @override
   State<AddressModal> createState() => _AddressModalState();
@@ -25,17 +32,49 @@ class _AddressModalState extends State<AddressModal> {
   bool isLoading = true;
   List<Address> addressList = [];
   bool isVerified = false;
+  Address? currentSelectedAddress;
+  bool isLinkEntered = false;
 
   TextEditingController addressController = TextEditingController();
   TextEditingController localityController = TextEditingController();
   TextEditingController googleMapLinkController = TextEditingController();
   TextEditingController landmarkController = TextEditingController();
   TextEditingController floorController = TextEditingController();
+  List<String> availablePincodes = [];
+  String? pincode;
+  bool isPincodeLoading = true;
+
+  Future<void> fetchPincodes() async {
+    try {
+      final response = await getPincodes(); // Already returns List<String>
+      setState(() {
+        availablePincodes = response; // Use directly
+        isPincodeLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isPincodeLoading = false;
+      });
+      showSuccessSnackbar(context, 'Failed to load pincodes');
+    }
+  }
 
   @override
   void initState() {
-    super.initState();
+    currentSelectedAddress =
+        widget.selectedAddress; // Initialize selected address
+    googleMapLinkController.addListener(() {
+      final isNotEmpty = googleMapLinkController.text.trim().isNotEmpty;
+      if (isNotEmpty != isLinkEntered) {
+        setState(() {
+          isLinkEntered = isNotEmpty;
+          if (!isNotEmpty) isVerified = false; // reset verification
+        });
+      }
+    });
     loadAddresses();
+    fetchPincodes();
+    super.initState();
   }
 
   Future<void> loadAddresses() async {
@@ -177,7 +216,6 @@ class _AddressModalState extends State<AddressModal> {
 
   void saveAddress() async {
     if (_formKey.currentState!.validate()) {
-      String mapLink = '';
       double? latitude;
       double? longitude;
 
@@ -190,17 +228,15 @@ class _AddressModalState extends State<AddressModal> {
           showSuccessSnackbar(context, 'Failed to get current location: $e');
           return;
         }
-      } else {
-        mapLink = googleMapLinkController.text.trim();
       }
 
       final request = AddressRequest(
         address: addressController.text.trim(),
         locality: localityController.text.trim(),
-        googleMapLink: mapLink,
         landmark: landmarkController.text.trim(),
         floor: floorController.text.trim(),
         lattitude: latitude,
+        pincode: pincode,
         longitude: longitude,
       );
 
@@ -365,6 +401,17 @@ class _AddressModalState extends State<AddressModal> {
                   ),
                   const SizedBox(height: 12),
                   buildTextField(
+                    floorController,
+                    "Enter your floor",
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'floor is required';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  buildTextField(
                     localityController,
                     "Enter your locality",
                     validator: (value) {
@@ -377,84 +424,97 @@ class _AddressModalState extends State<AddressModal> {
                   const SizedBox(height: 12),
 
                   if (selectedFor == 'Someone Else') ...[
-                    TextFormField(
-                      controller: googleMapLinkController,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Google map link is required';
-                        }
-                        if (!isVerified) {
-                          return 'Please verify this location before saving.';
-                        }
-                        return null;
-                      },
-
-                      decoration: InputDecoration(
-                        hintText: "Place your Google map link",
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                            color: CustomColors.baseColor,
-                            width: 1,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                            color: CustomColors.baseColor,
-                            width: 2.5,
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                            color: CustomColors.baseColor,
-                            width: 1,
-                          ),
-                        ),
-                        suffixIcon: Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: ElevatedButton(
-                            onPressed: verifyLocation,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: CustomColors.baseColor,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
+                    isPincodeLoading
+                        ? const CircularProgressIndicator()
+                        : DropdownButtonFormField2<String>(
+                            isExpanded: true,
+                            value: pincode,
+                            items: availablePincodes
+                                .map(
+                                  (pincode) => DropdownMenuItem<String>(
+                                    value: pincode,
+                                    child: Text(
+                                      pincode,
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                pincode = value;
+                              });
+                            },
+                            validator: (value) => value == null || value.isEmpty
+                                ? 'Pincode is required'
+                                : null,
+                            decoration: InputDecoration(
+                              labelText: "Pincode",
+                              labelStyle: const TextStyle(fontSize: 14),
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 14,
                               ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: CustomColors.baseColor,
+                                  width: 1,
+                                ),
                               ),
-                              elevation: 0,
-                            ),
-                            child: const Text(
-                              'Verify',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: CustomColors.baseColor,
+                                  width: 2.5,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: CustomColors.baseColor,
+                                  width: 1,
+                                ),
                               ),
                             ),
+                            dropdownStyleData: DropdownStyleData(
+                              maxHeight: 200,
+                              width: 200,
+                              offset: const Offset(100, 0),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                color: Colors.white,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            menuItemStyleData: const MenuItemStyleData(
+                              height: 42,
+                              padding: EdgeInsets.symmetric(horizontal: 12),
+                            ),
                           ),
-                        ),
-                        suffixIconConstraints: const BoxConstraints(
-                          minHeight: 32,
-                          minWidth: 0,
-                        ),
-                      ),
-                    ),
 
                     const SizedBox(height: 12),
                   ],
 
-                  buildTextField(landmarkController, "Landmark (if any)"),
-                  const SizedBox(height: 12),
                   buildTextField(
-                    floorController,
-                    "Enter your floor (optional)",
+                    landmarkController,
+                    "Landmark",
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'landmark is required';
+                      }
+                      return null;
+                    },
                   ),
+
                   const SizedBox(height: 12),
 
                   ElevatedButton(

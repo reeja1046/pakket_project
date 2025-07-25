@@ -1,12 +1,12 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:pakket/controller/address.dart';
 import 'package:pakket/model/order.dart';
 import 'package:pakket/controller/orderdetails.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/model/address.dart';
 import 'package:pakket/view/checkout/widgets/address.dart';
-import 'package:pakket/view/checkout/widgets/widget.dart';
+import 'package:pakket/view/profile/widgets.dart';
 import 'package:pakket/view/widget/ordermodal.dart';
 import 'package:pakket/view/widget/snackbar.dart';
 
@@ -18,8 +18,8 @@ class HelpCenterList extends StatefulWidget {
 }
 
 class _HelpCenterListState extends State<HelpCenterList> {
-  final List<bool> _isExpandedList = [false, false, false, false];
-  int selectedAddressIndex = 0; // Default selected address is the first one
+  final List<bool> _isExpandedList = [false, false, false, false, false];
+  int selectedAddressIndex = 0;
   List<Address> savedAddresses = [];
   bool isLoadingAddresses = true;
   Address? selectedAddress;
@@ -30,6 +30,7 @@ class _HelpCenterListState extends State<HelpCenterList> {
   final List<String> titles = [
     'Current Address details',
     'Your order history',
+    'Terms and Conditions',
     'About us',
     'Contact us',
   ];
@@ -45,8 +46,6 @@ class _HelpCenterListState extends State<HelpCenterList> {
     setState(() {
       savedAddresses = addresses;
       isLoadingAddresses = false;
-
-      // Set the first address as selected by default
       if (savedAddresses.isNotEmpty && selectedAddressIndex == null) {
         selectedAddressIndex = 0;
       }
@@ -121,6 +120,32 @@ class _HelpCenterListState extends State<HelpCenterList> {
       itemBuilder: (context, index) {
         final isAddressTile = index == 0;
         final isOrderHistoryTile = index == 1;
+
+        if (index == 2 || index == 3) {
+          final url = index == 2
+              ? 'https://pakket.in/terms-conditions/'
+              : 'https://pakket.in/home/';
+          return ListTile(
+            onTap: () => launchExternalLink(url),
+            trailing: CircleAvatar(
+              radius: 10,
+              backgroundColor: CustomColors.baseColor,
+              child: const Icon(
+                Icons.keyboard_arrow_right,
+                color: Colors.white,
+                size: 18,
+              ),
+            ),
+            title: Text(
+              titles[index],
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF636260),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          );
+        }
 
         return Theme(
           data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
@@ -325,107 +350,87 @@ class _HelpCenterListState extends State<HelpCenterList> {
                           }).toList(),
                         ),
                       ),
-              ] else ...[
+              ] else if (index == 4) ...[
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16.0,
-                    vertical: 8,
+                    vertical: 5,
                   ),
-                  child: Text(
-                    'Reach us at help@pakket.com.',
-                    style: const TextStyle(color: Colors.black54),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.phone_outlined,
+                            color: CustomColors.baseColor,
+                            size: 22,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Call Us:',
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => launchPhone('+918089996656'),
+                            child: Text(
+                              ' +91 80899 96656',
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          FaIcon(
+                            FontAwesomeIcons.whatsapp,
+                            color: CustomColors.baseColor,
+                          ),
+                          SizedBox(width: 8),
+                          Text('Chat with Us:'),
+                          GestureDetector(
+                            onTap: () => launchWhatsApp('+918089006656'),
+                            child: Text(
+                              ' +91 80890 06656',
+                              style: TextStyle(color: Colors.blue),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          FaIcon(
+                            FontAwesomeIcons.envelope,
+                            color: CustomColors.baseColor,
+                            size: 20,
+                          ),
+                          SizedBox(width: 8),
+                          Text('Email:'),
+                          GestureDetector(
+                            onTap: () =>
+                                launchEmail('pakket.allinone@gmail.com'),
+                            child: Text(
+                              ' pakket.allinone@gmail.com',
+                              style: TextStyle(color: Colors.blue),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ],
             ],
-          ),
-        );
-      },
-    );
-  }
-
-  Future<bool?> showBlurDialog({
-    required BuildContext context,
-    required String title,
-    required String description,
-    required String actionText,
-    required IconData icon,
-  }) {
-    return showGeneralDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-      pageBuilder: (context, _, __) {
-        return BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-          child: Dialog(
-            backgroundColor: Colors.transparent,
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: CustomColors.baseColor,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(15),
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(icon, size: 30, color: CustomColors.baseColor),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    description,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: const Text(
-                          'Cancel',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context, true),
-                        child: Text(
-                          actionText,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
           ),
         );
       },

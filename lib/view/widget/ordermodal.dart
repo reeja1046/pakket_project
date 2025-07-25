@@ -32,6 +32,11 @@ class OrderDetailModal extends StatelessWidget {
               );
             } else {
               final order = snapshot.data!;
+              final double itemTotal = order.items.fold(
+                0,
+                (sum, item) => sum + (item.priceAtOrder * item.quantity),
+              );
+
               return SingleChildScrollView(
                 controller: scrollController,
                 padding: const EdgeInsets.all(16),
@@ -136,7 +141,7 @@ class OrderDetailModal extends StatelessWidget {
                             ),
                             // Total price
                             Text(
-                              'Rs.${(item.priceAtOrder * item.quantity).floor()}',
+                              'Rs.${(item.priceAtOrder * item.quantity).toStringAsFixed(2)}',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
@@ -165,7 +170,7 @@ class OrderDetailModal extends StatelessWidget {
                           ),
                           _priceRow(
                             'Item total',
-                            'Rs.${order.totalPrice.toStringAsFixed(2)}',
+                            'Rs.${itemTotal.toStringAsFixed(2)}',
                           ),
                           SizedBox(
                             height: MediaQuery.of(context).size.height * 0.02,
@@ -180,7 +185,7 @@ class OrderDetailModal extends StatelessWidget {
                           const Divider(),
                           _priceRow(
                             'Total',
-                            'Rs.${(order.totalPrice + order.deliveryCharge).toStringAsFixed(2)}',
+                            'Rs.${(itemTotal + order.deliveryCharge).toStringAsFixed(2)}',
                             isBold: true,
                           ),
                         ],

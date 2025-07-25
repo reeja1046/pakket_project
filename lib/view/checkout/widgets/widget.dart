@@ -1,8 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pakket/core/constants/color.dart';
-import 'package:pakket/view/order.dart';
+import 'package:pakket/getxcontroller/bottomnavbar_controller.dart';
+import 'package:pakket/view/widget/bottomnavbar.dart';
 
 Widget priceRow(String label, String value, {bool bold = false}) {
   return Padding(
@@ -34,11 +36,9 @@ void showBlurDialog(BuildContext context) {
     barrierLabel: "Order Placed",
     pageBuilder: (_, __, ___) {
       Future.delayed(const Duration(seconds: 2), () {
+        Get.find<BottomNavController>().changeIndex(0);
         Navigator.pop(context);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => OrderScreen()),
-        );
+        Get.offAll(() => BottomNavScreen());
       });
 
       return BackdropFilter(
@@ -54,13 +54,25 @@ void showBlurDialog(BuildContext context) {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const CircleAvatar(radius: 40, backgroundColor: Colors.white),
-                const SizedBox(height: 8),
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: CustomColors.baseColor,
-                  child: const Icon(Icons.check, color: Colors.white, size: 35),
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    const CircleAvatar(
+                      radius: 40,
+                      backgroundColor: Colors.white,
+                    ),
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundColor: CustomColors.baseColor,
+                      child: const Icon(
+                        Icons.check,
+                        color: Colors.white,
+                        size: 35,
+                      ),
+                    ),
+                  ],
                 ),
+
                 const SizedBox(height: 10),
                 Text(
                   'Thank you!\nYour order is placed!',
@@ -95,6 +107,7 @@ Widget buildTextField(
   return TextFormField(
     controller: controller,
     maxLines: 1,
+    textCapitalization: TextCapitalization.words,
     validator: validator,
     decoration: InputDecoration(
       hintText: hint,
