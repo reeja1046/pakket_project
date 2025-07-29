@@ -3,6 +3,7 @@ import 'package:pakket/core/constants/color.dart';
 
 PreferredSizeWidget buildAppBar(BuildContext context) {
   return AppBar(
+    scrolledUnderElevation: 0.0,
     backgroundColor: CustomColors.scaffoldBgClr,
     title: const Text(
       'Product detail',

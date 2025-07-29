@@ -27,6 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: CustomColors.scaffoldBgClr,
       appBar: AppBar(
+        scrolledUnderElevation: 0.0,
         backgroundColor: CustomColors.scaffoldBgClr,
         title: Text(
           'Back to Profile',

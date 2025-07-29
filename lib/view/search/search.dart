@@ -16,6 +16,7 @@ class _SearchDetailsState extends State<SearchDetails> {
   final TextEditingController searchController = TextEditingController();
   List<dynamic> searchResults = [];
   bool isLoading = false;
+  Future<void>? _currentRequest;
 
   @override
   void initState() {
@@ -29,62 +30,79 @@ class _SearchDetailsState extends State<SearchDetails> {
   }
 
   Future<void> _fetchAllProducts() async {
+    if (!mounted) return;
     setState(() => isLoading = true);
-    final token = await _getToken();
 
+    final token = await _getToken();
     try {
       final response = await http.get(
         Uri.parse('https://pakket-dev.vercel.app/api/app/product'),
         headers: {'Authorization': 'Bearer $token'},
       );
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final allProducts = (data['products'] as List)..shuffle();
-        setState(() => searchResults = allProducts.take(8).toList());
+        final products = (data['products'] ?? []) as List;
+        products.shuffle();
+        if (mounted) {
+          setState(() => searchResults = products.take(8).toList());
+        }
       }
     } catch (e) {
-      debugPrint("Error: $e");
+      debugPrint("Error fetching products: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
   }
 
   Future<void> _searchProducts(String query) async {
-    if (query.isEmpty) return _fetchAllProducts();
+    if (_currentRequest != null) return; // prevent multiple API calls
+
+    if (query.isEmpty) {
+      _fetchAllProducts();
+      return;
+    }
 
     setState(() => isLoading = true);
     final token = await _getToken();
 
-    try {
-      final response = await http.get(
-        Uri.parse(
-          'https://pakket-dev.vercel.app/api/app/search?q=${Uri.encodeComponent(query)}',
-        ),
-        headers: {'Authorization': 'Bearer $token'},
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() => searchResults = data['result']);
-      }
-    } catch (e) {
-      debugPrint("Search error: $e");
-    } finally {
-      if (mounted) setState(() => isLoading = false);
-    }
+    _currentRequest = http
+        .get(
+          Uri.parse(
+            'https://pakket-dev.vercel.app/api/app/search?q=${Uri.encodeComponent(query)}',
+          ),
+          headers: {'Authorization': 'Bearer $token'},
+        )
+        .then((response) {
+          if (response.statusCode == 200) {
+            final data = jsonDecode(response.body);
+            if (mounted) {
+              setState(() => searchResults = data['result'] ?? []);
+            }
+          }
+        })
+        .catchError((e) {
+          debugPrint("Search error: $e");
+        })
+        .whenComplete(() {
+          _currentRequest = null;
+          if (mounted) setState(() => isLoading = false);
+        });
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
+    searchController.dispose();
     super.dispose();
-    searchController.clear();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false, // Prevent screen resize
       backgroundColor: CustomColors.scaffoldBgClr,
       appBar: AppBar(
+        scrolledUnderElevation: 0,
         backgroundColor: CustomColors.scaffoldBgClr,
         title: const Text(
           'Search in detail',
@@ -97,95 +115,74 @@ class _SearchDetailsState extends State<SearchDetails> {
         ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(
-            color: Colors.grey.withOpacity(0.3), // Border color
-            height: 1,
-          ),
+          child: Container(color: Colors.grey.withOpacity(0.3), height: 1),
         ),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: SizedBox(
-                      height: 45,
-                      child: TextFormField(
-                        controller: searchController,
-                        onChanged: _searchProducts,
-                        textAlignVertical: TextAlignVertical.center,
-                        decoration: InputDecoration(
-                          hintText: 'Search',
-                          prefixIcon: Image.asset('assets/home/icon.png'),
-                          filled: true,
-                          fillColor: CustomColors.textformfield,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Colors.grey),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: Colors.grey),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: CustomColors.baseColor,
-                              width: 2,
-                            ),
-                          ),
-                        ),
-                      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Search Bar
+            SizedBox(
+              height: 45,
+              child: TextFormField(
+                controller: searchController,
+                onChanged: _searchProducts,
+                textAlignVertical: TextAlignVertical.center,
+                decoration: InputDecoration(
+                  hintText: 'Search',
+                  prefixIcon: Image.asset('assets/home/icon.png'),
+                  filled: true,
+                  fillColor: CustomColors.textformfield,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Colors.grey),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: Colors.grey),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(
+                      color: CustomColors.baseColor,
+                      width: 2,
                     ),
                   ),
-                  // const SizedBox(width: 10),
-                  // Container(
-                  //   height: 45,
-                  //   width: 50,
-                  //   decoration: BoxDecoration(
-                  //     color: CustomColors.baseColor,
-                  //     borderRadius: BorderRadius.circular(10),
-                  //   ),
-                  //   child: IconButton(
-                  //     onPressed: () => _searchProducts(searchController.text),
-                  //     icon: Image.asset('assets/home/setting-4.png'),
-                  //     padding: EdgeInsets.zero,
-                  //   ),
-                  // ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              if (isLoading)
-                const Center(child: CircularProgressIndicator())
-              else if (searchResults.isEmpty)
-                const Center(child: Text("No products found"))
-              else
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: searchResults.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 0.7,
-                        ),
-                    itemBuilder: (_, i) =>
-                        buildProductCard(searchResults[i], context),
-                  ),
                 ),
-            ],
-          ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Product Grid
+            Expanded(
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : searchResults.isEmpty
+                  ? const Center(child: Text("No products found"))
+                  : OrientationBuilder(
+                      builder: (context, orientation) {
+                        final isPortrait = orientation == Orientation.portrait;
+                        final crossAxisCount = isPortrait ? 2 : 3;
+                        final aspectRatio = isPortrait ? 0.68 : 1.1;
+
+                        return GridView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          itemCount: searchResults.length,
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: crossAxisCount,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                                childAspectRatio: aspectRatio,
+                              ),
+                          itemBuilder: (_, i) =>
+                              buildProductCard(searchResults[i], context),
+                        );
+                      },
+                    ),
+            ),
+          ],
         ),
       ),
     );

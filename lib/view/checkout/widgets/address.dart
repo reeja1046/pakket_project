@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
-import 'package:pakket/controller/map.dart';
+import 'package:get/get.dart';
 import 'package:pakket/controller/pincode.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/controller/address.dart';
@@ -85,41 +85,60 @@ class _AddressModalState extends State<AddressModal> {
     });
   }
 
-  void verifyLocation() async {
-    String mapUrl = googleMapLinkController.text.trim();
-    if (mapUrl.isEmpty) {
-      showSuccessSnackbar(context, 'Please enter a valid Google Map link.');
-      return;
-    }
+  void saveAddress() async {
+    print('-------------');
+    if (_formKey.currentState!.validate()) {
+      double? latitude;
+      double? longitude;
 
-    try {
-      var response = await checkLocationServiceability(mapUrl);
+      if (selectedFor == 'Myself') {
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          latitude = prefs.getDouble('latitude');
+          longitude = prefs.getDouble('longitude');
+          print(latitude);
+          print(longitude);
+        } catch (e) {
+          showSuccessSnackbar(context, 'Failed to get current location: $e');
+          return;
+        }
+      }
 
-      if (response?['isDeliverable'] == true) {
-        setState(() {
-          isVerified = true; // Set verification flag
-        });
-        showBlurDialog(
-          context,
-          'Deliverable',
-          'We can deliver to this location.\nProceed with your order!',
-        );
+      final request = AddressRequest(
+        address: addressController.text.trim(),
+        locality: localityController.text.trim(),
+        landmark: landmarkController.text.trim(),
+        floor: floorController.text.trim(),
+        lattitude: latitude,
+        pincode: pincode,
+        longitude: longitude,
+      );
+
+      final result = await addAddressApi(request);
+      print(result);
+
+      if (result == null) return; // token expired handled globally
+
+      final bool success = result['success'];
+      final Address? newAddress = result['address'];
+
+      if (success && newAddress != null) {
+        print('yes');
+        Navigator.pop(context);
+        // Show success blur dialog
+        showBlurDialog(context, 'Deliverable', 'Address added successfully!');
+
+        widget.onAddressSelected(newAddress);
       } else {
-        setState(() {
-          isVerified = false; // Reset if not deliverable
-        });
-
+        Navigator.pop(context);
+        // Show failure blur dialog
         showBlurDialog(
           context,
           'Not Deliverable',
+
           "Sorry, we currently don't deliver to this location. Please try a different address.",
         );
       }
-    } catch (e) {
-      showSuccessSnackbar(
-        context,
-        'Error verifying location. Please try again.',
-      );
     }
   }
 
@@ -128,14 +147,19 @@ class _AddressModalState extends State<AddressModal> {
       context: context,
       barrierDismissible: false,
       barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: Colors.black54, // Adds dimmed background
+      transitionDuration: const Duration(milliseconds: 200),
       pageBuilder:
           (
             BuildContext buildContext,
-            Animation animation,
-            Animation secondaryAnimation,
+            Animation<double> animation,
+            Animation<double> secondaryAnimation,
           ) {
+            // Auto close after 4 seconds
             Future.delayed(const Duration(seconds: 4), () {
-              Navigator.pop(context);
+              if (Navigator.canPop(buildContext)) {
+                Navigator.pop(buildContext); // Close blur dialog
+              }
             });
 
             return BackdropFilter(
@@ -181,9 +205,9 @@ class _AddressModalState extends State<AddressModal> {
                                   radius: 30,
                                   backgroundColor: CustomColors.baseColor,
                                   child: const Icon(
-                                    Icons.error,
+                                    Icons.close,
                                     color: Colors.white,
-                                    size: 50,
+                                    size: 35,
                                   ),
                                 ),
                               ],
@@ -207,52 +231,44 @@ class _AddressModalState extends State<AddressModal> {
                       const SizedBox(height: 60),
                     ],
                   ),
+                  // child: Column(
+                  //   mainAxisSize: MainAxisSize.min,
+                  //   children: [
+                  //     text1 == "Deliverable"
+                  //         ? const Icon(
+                  //             Icons.check_circle,
+                  //             color: Colors.white,
+                  //             size: 60,
+                  //           )
+                  //         : const Icon(
+                  //             Icons.error,
+                  //             color: Colors.white,
+                  //             size: 60,
+                  //           ),
+                  //     const SizedBox(height: 10),
+                  //     Text(
+                  //       text1,
+                  //       textAlign: TextAlign.center,
+                  //       style: const TextStyle(
+                  //         color: Colors.white,
+                  //         fontSize: 20,
+                  //         fontWeight: FontWeight.bold,
+                  //       ),
+                  //     ),
+                  //     const SizedBox(height: 10),
+                  //     Text(
+                  //       text2,
+                  //       textAlign: TextAlign.center,
+                  //       style: const TextStyle(color: Colors.black),
+                  //     ),
+                  //     const SizedBox(height: 40),
+                  //   ],
+                  // ),
                 ),
               ),
             );
           },
     );
-  }
-
-  void saveAddress() async {
-    if (_formKey.currentState!.validate()) {
-      double? latitude;
-      double? longitude;
-
-      if (selectedFor == 'Myself') {
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          latitude = prefs.getDouble('latitude');
-          longitude = prefs.getDouble('longitude');
-        } catch (e) {
-          showSuccessSnackbar(context, 'Failed to get current location: $e');
-          return;
-        }
-      }
-
-      final request = AddressRequest(
-        address: addressController.text.trim(),
-        locality: localityController.text.trim(),
-        landmark: landmarkController.text.trim(),
-        floor: floorController.text.trim(),
-        lattitude: latitude,
-        pincode: pincode,
-        longitude: longitude,
-      );
-
-      Address? newAddress = await addAddressApi(request);
-      if (newAddress != null) {
-        widget.onAddressSelected(newAddress);
-        showSuccessSnackbar(context, 'Address added successfully!!');
-        Navigator.pop(context);
-      } else {
-        showBlurDialog(
-          context,
-          'Not Deliverable',
-          "Sorry, we currently don't deliver to this location. Please try a different address.",
-        );
-      }
-    }
   }
 
   @override

@@ -13,16 +13,26 @@ class ScrollCardCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Detect orientation
+    final isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
+
+    // Calculate height based on screen width
+    final screenWidth = MediaQuery.of(context).size.width;
+    final carouselHeight = isPortrait
+        ? screenWidth * 0.5
+        : screenWidth * 0.4; // dynamic ratio
+
     return Obx(() {
       if (carouselController.banners.isEmpty) {
-        return const SizedBox(
-          height: 240,
-          child: Center(child: CircularProgressIndicator()),
+        return SizedBox(
+          height: carouselHeight,
+          child: const Center(child: CircularProgressIndicator()),
         );
       }
 
       return SizedBox(
-        height: 240,
+        height: carouselHeight,
         child: PageView.builder(
           controller: carouselController.pageController,
           itemCount: carouselController.banners.length,
@@ -30,15 +40,16 @@ class ScrollCardCarousel extends StatelessWidget {
           itemBuilder: (context, index) {
             final banner = carouselController.banners[index];
             final selectedCategoryName = banner.categoryname;
+
             return GestureDetector(
               onTap: () {
-                // First, put the controller with the selected tag
+                // Set controller with tag for selected category
                 Get.put(
                   AllGroceryController(initialCategory: selectedCategoryName),
                   tag: selectedCategoryName,
                 );
 
-                // Then navigate to the screen
+                // Navigate to All Grocery Items page
                 Get.to(
                   () => AllGroceryItems(
                     title: selectedCategoryName,
@@ -47,12 +58,11 @@ class ScrollCardCarousel extends StatelessWidget {
                 );
               },
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                padding: const EdgeInsets.symmetric(horizontal: 6.0),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
                   child: Image.network(
                     banner.url,
-                    fit: BoxFit.contain,
+                    fit: BoxFit.fill, // fills without stretching
                     errorBuilder: (_, __, ___) => const Icon(Icons.error),
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;

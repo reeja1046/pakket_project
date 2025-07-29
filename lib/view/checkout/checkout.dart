@@ -12,7 +12,7 @@ import 'package:pakket/model/address.dart';
 import 'package:pakket/model/cartfetching.dart';
 import 'package:pakket/model/orderplaced.dart';
 import 'package:pakket/view/checkout/widgets/address.dart';
-import 'package:pakket/view/checkout/widgets/beforecheckout.dart';
+import 'package:pakket/view/checkout/widgets/beforecheckout.dart'; // Deals Section
 import 'package:pakket/view/checkout/widgets/widget.dart';
 import 'package:pakket/view/widget/snackbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -30,7 +30,7 @@ class CheckoutPage extends StatefulWidget {
 class _CheckoutPageState extends State<CheckoutPage> {
   List<CartItemModelFetching> cartItems = [];
   bool isLoading = true;
-  int deliveryCharge = 0; // Initially 0
+  int deliveryCharge = 0;
   bool isDeliveryLoading = false;
   final HomeAdController adController = Get.put(HomeAdController());
 
@@ -44,7 +44,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
   }
 
   Future<void> loadCartItems() async {
-    print("loadCartItems triggered");
     final items = await getCart();
     setState(() {
       cartItems = mergeCartItems(items);
@@ -57,7 +56,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
     if (addresses.isNotEmpty) {
       setState(() {
-        selectedAddress = addresses.first; // Last added address
+        selectedAddress = addresses.first;
       });
       fetchDeliveryCharge(selectedAddress!.id);
     }
@@ -148,120 +147,158 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: CustomColors.scaffoldBgClr,
-      appBar: AppBar(
-        centerTitle: true,
-        title: const Text("Checkout"),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: () {
-            if (widget.fromBottomNav) {
-              final bottomNavController = Get.find<BottomNavController>();
-              bottomNavController.changeIndex(0);
-            } else {
-              Get.back();
-            }
-          },
-        ),
-        backgroundColor: CustomColors.scaffoldBgClr,
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(
-            color: Colors.grey.withOpacity(0.3), // Border color
-            height: 1,
+    return OrientationBuilder(
+      builder: (context, orientation) {
+        final isPortrait = orientation == Orientation.portrait;
+        final screenWidth = MediaQuery.of(context).size.width;
+
+        final imageSize = isPortrait ? 100.0 : 80.0;
+        final fontSizeTitle = isPortrait ? 15.0 : 14.0;
+        final fontSizeSub = isPortrait ? 14.0 : 12.0;
+
+        return Scaffold(
+          backgroundColor: CustomColors.scaffoldBgClr,
+          appBar: AppBar(
+            centerTitle: true,
+            scrolledUnderElevation: 0.0,
+            title: const Text("Checkout"),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios),
+              onPressed: () {
+                if (widget.fromBottomNav) {
+                  final bottomNavController = Get.find<BottomNavController>();
+                  bottomNavController.changeIndex(0);
+                } else {
+                  Get.back();
+                }
+              },
+            ),
+            backgroundColor: CustomColors.scaffoldBgClr,
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(1),
+              child: Container(color: Colors.grey.withOpacity(0.3), height: 1),
+            ),
           ),
-        ),
-      ),
-      body: SafeArea(
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : cartItems.isEmpty
-            ? const Center(child: Text("No items in cart."))
-            : CustomScrollView(
-                slivers: [
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      childCount: cartItems.length,
-                      (context, index) =>
-                          buildCartItem(cartItems[index], index),
-                    ),
-                  ),
-                  CheckoutDealsSection(
-                    onProductAdded: () {
-                      loadCartItems(); // reload cart instantly when something is added
-                    },
-                  ),
-                  SliverToBoxAdapter(
-                    child: Obx(() {
-                      final banner = adController.checkoutbanner.value;
+          body: SafeArea(
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : cartItems.isEmpty
+                ? const Center(child: Text("No items in cart."))
+                : CustomScrollView(
+                    slivers: [
+                      /// Cart items
+                      SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          childCount: cartItems.length,
+                          (context, index) => buildCartItem(
+                            cartItems[index],
+                            index,
+                            imageSize,
+                            fontSizeTitle,
+                            fontSizeSub,
+                          ),
+                        ),
+                      ),
 
-                      if (banner == null) return const SizedBox.shrink();
+                      /// Deals Section
+                      CheckoutDealsSection(
+                        onProductAdded: () {
+                          loadCartItems();
+                        },
+                      ),
 
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 14.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(height: 20),
-                            Text(
-                              'Sponsored Advertisement',
-                              style: TextStyle(color: Colors.grey),
+                      /// Advertisement Banner
+                      SliverToBoxAdapter(
+                        child: Obx(() {
+                          final banner = adController.checkoutbanner.value;
+                          if (banner == null) return const SizedBox.shrink();
+
+                          final size = MediaQuery.of(context).size;
+                          final isPortrait =
+                              MediaQuery.of(context).orientation ==
+                              Orientation.portrait;
+
+                          // Dynamic dimensions
+                          final bannerWidth = size.width;
+                          final bannerHeight = isPortrait
+                              ? bannerWidth * 0.5
+                              : bannerWidth * 0.45;
+                          // shorter in landscape
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14.0,
                             ),
-                            SizedBox(height: 6),
-                            InkWell(
-                              onTap: () {
-                                if (banner.redirectUrl.isNotEmpty) {
-                                  launchUrl(Uri.parse(banner.redirectUrl));
-                                }
-                              },
-                              child: Column(
-                                children: [
-                                  SizedBox(
-                                    width: MediaQuery.of(context).size.width,
-                                    height: 200,
-                                    child: Image.network(
-                                      banner.imageUrl,
-                                      fit: BoxFit.contain,
-                                      errorBuilder:
-                                          (context, error, stackTrace) =>
-                                              const Icon(Icons.error),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 20),
+                                const Text(
+                                  'Sponsored Advertisement',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                                const SizedBox(height: 12),
+                                InkWell(
+                                  onTap: () {
+                                    if (banner.redirectUrl.isNotEmpty) {
+                                      launchUrl(Uri.parse(banner.redirectUrl));
+                                    }
+                                  },
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: SizedBox(
+                                      width: bannerWidth,
+                                      height: bannerHeight,
+                                      child: Image.network(
+                                        banner.imageUrl,
+                                        fit: BoxFit
+                                            .fill, // cover looks better for banners
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                const Icon(Icons.error),
+                                      ),
                                     ),
                                   ),
-                                  SizedBox(height: 20),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      );
-                    }),
-                  ),
+                          );
+                        }),
+                      ),
 
-                  SliverToBoxAdapter(child: _buildPriceAndPlaceOrderSection()),
-                ],
-              ),
-      ),
+                      /// Price Details & Place Order
+                      SliverToBoxAdapter(
+                        child: _buildPriceAndPlaceOrderSection(),
+                      ),
+                    ],
+                  ),
+          ),
+        );
+      },
     );
   }
 
-  Widget buildCartItem(CartItemModelFetching item, int index) {
+  /// Cart Item Widget
+  Widget buildCartItem(
+    CartItemModelFetching item,
+    int index,
+    double imageSize,
+    double fontSizeTitle,
+    double fontSizeSub,
+  ) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      margin: const EdgeInsets.fromLTRB(12, 12, 16, 0),
       padding: const EdgeInsets.all(12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image Section
           Container(
-            width: 100,
-            height: 100,
+            width: imageSize,
+            height: imageSize,
             color: CustomColors.textformfield,
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Container(
-                width: 80,
-                height: 80,
                 decoration: BoxDecoration(
                   color: CustomColors.baseContainer,
                   borderRadius: BorderRadius.circular(8),
@@ -272,8 +309,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
             ),
           ),
           const SizedBox(width: 12),
-
-          // Text and Price Section
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -282,8 +317,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   item.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: fontSizeTitle,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -293,9 +328,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   children: [
                     Text(
                       item.unit,
-                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                      style: TextStyle(
+                        fontSize: fontSizeSub,
+                        color: Colors.grey,
+                      ),
                     ),
-
                     buildQuantityControl(item, index),
                   ],
                 ),
@@ -305,15 +342,15 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   children: [
                     Text(
                       'Rs.${item.offerPrice.toInt()}/-',
-                      style: const TextStyle(
-                        fontSize: 15,
+                      style: TextStyle(
+                        fontSize: fontSizeSub + 1,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
                       'Rs. ${(item.offerPrice * item.quantity).toInt()}',
-                      style: const TextStyle(
-                        fontSize: 13,
+                      style: TextStyle(
+                        fontSize: fontSizeSub,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
                       ),
@@ -328,12 +365,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+  /// Quantity Control
   Widget buildQuantityControl(CartItemModelFetching item, int index) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        // Quantity Box
         Container(
           height: 30,
           decoration: BoxDecoration(
@@ -344,7 +381,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Minus Button
               IconButton(
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
@@ -365,8 +401,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   }
                 },
               ),
-
-              // Quantity Count
               Text(
                 '${item.quantity}',
                 style: const TextStyle(
@@ -374,8 +408,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-
-              // Plus Button
               IconButton(
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
@@ -398,6 +430,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+  /// Price Details Section
   Widget _buildPriceAndPlaceOrderSection() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -457,6 +490,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     );
   }
 
+  /// Place Order Button
   Widget buildPlaceOrderButton() {
     return Row(
       children: [

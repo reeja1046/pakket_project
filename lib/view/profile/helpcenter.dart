@@ -18,7 +18,7 @@ class HelpCenterList extends StatefulWidget {
 }
 
 class _HelpCenterListState extends State<HelpCenterList> {
-  final List<bool> _isExpandedList = [false, false, false, false, false];
+  final List<bool> _isExpandedList = [false, false, false, false, false, false];
   int selectedAddressIndex = 0;
   List<Address> savedAddresses = [];
   bool isLoadingAddresses = true;
@@ -31,6 +31,7 @@ class _HelpCenterListState extends State<HelpCenterList> {
     'Current Address details',
     'Your order history',
     'Terms and Conditions',
+    'Privacy Policy',
     'About us',
     'Contact us',
   ];
@@ -121,9 +122,11 @@ class _HelpCenterListState extends State<HelpCenterList> {
         final isAddressTile = index == 0;
         final isOrderHistoryTile = index == 1;
 
-        if (index == 2 || index == 3) {
+        if (index == 2 || index == 3 || index == 4) {
           final url = index == 2
               ? 'https://pakket.in/terms-conditions/'
+              : index == 3
+              ? 'https://pakket.in/privacy-policy/'
               : 'https://pakket.in/home/';
           return ListTile(
             onTap: () => launchExternalLink(url),
@@ -350,7 +353,7 @@ class _HelpCenterListState extends State<HelpCenterList> {
                           }).toList(),
                         ),
                       ),
-              ] else if (index == 4) ...[
+              ] else if (index == 5) ...[
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16.0,

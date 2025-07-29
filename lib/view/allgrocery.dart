@@ -13,7 +13,8 @@ import 'package:pakket/view/widget/modal.dart';
 class AllGroceryItems extends StatefulWidget {
   final String title;
   final bool fromBottomNav;
-  AllGroceryItems({
+
+  const AllGroceryItems({
     super.key,
     required this.title,
     required this.fromBottomNav,
@@ -45,7 +46,7 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
       String? initialCategoryId;
       String initialCategoryName = widget.title;
 
-      // Find the matching category by title
+      // Match category by title
       final matchingCategory = fetchedCategories.firstWhere(
         (category) => category.name.toLowerCase() == widget.title.toLowerCase(),
         orElse: () => fetchedCategories.first,
@@ -60,7 +61,7 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
         selectedCategoryName = initialCategoryName;
       });
 
-      /// Check if 'All Items' is selected
+      // Load products
       if (matchingCategory.name.toLowerCase() == 'all items') {
         fetchAllProducts()
             .then((fetchedProducts) {
@@ -97,13 +98,18 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
 
   @override
   Widget build(BuildContext context) {
+    final isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: CustomColors.scaffoldBgClr,
       appBar: AppBar(
+        scrolledUnderElevation: 0.0,
         backgroundColor: CustomColors.scaffoldBgClr,
         title: Text(
           selectedCategoryName,
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         leading: IconButton(
@@ -130,18 +136,15 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(
-            color: Colors.grey.withOpacity(0.3), // Border color
-            height: 1,
-          ),
+          child: Container(color: Colors.grey.withOpacity(0.3), height: 1),
         ),
       ),
       body: SafeArea(
         child: Row(
           children: [
-            /// LEFT - Categories
+            /// LEFT SIDE: Category List
             SizedBox(
-              width: MediaQuery.of(context).size.width * 0.3,
+              width: isPortrait ? screenWidth * 0.3 : screenWidth * 0.25,
               child: ListView.builder(
                 controller: categoryScrollController,
                 itemCount: categories.length,
@@ -172,7 +175,6 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
                         fetchProducts(category.id);
                       }
                     },
-
                     child: Container(
                       margin: const EdgeInsets.symmetric(
                         horizontal: 10,
@@ -180,7 +182,6 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
                       ),
                       decoration: BoxDecoration(
                         color: CustomColors.scaffoldBgClr,
-
                         border: Border(
                           right: BorderSide(
                             color: isSelected
@@ -226,131 +227,168 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
               ),
             ),
 
-            /// RIGHT - Product Grid
+            /// RIGHT SIDE: Product Grid
             Expanded(
-              child: Container(
-                padding: const EdgeInsets.all(10),
-                child: isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : GridView.builder(
-                        itemCount: products.length,
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 10,
-                              mainAxisSpacing: 10,
-                              childAspectRatio: 0.535,
-                            ),
-                        itemBuilder: (context, index) {
-                          final product = products[index];
-                          final option = product.options.first;
+              child: OrientationBuilder(
+                builder: (context, orientation) {
+                  final isPortrait = orientation == Orientation.portrait;
+                  final size = MediaQuery.of(context).size;
+                  final shortestSide = size.shortestSide;
 
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => ProductDetails(
-                                    productId: product.productId,
+                  return Container(
+                    padding: const EdgeInsets.all(10),
+                    child: isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : GridView.builder(
+                            itemCount: products.length,
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: isPortrait
+                                      ? 2
+                                      : 3, // more columns in landscape
+                                  crossAxisSpacing: 10,
+                                  mainAxisSpacing: 10,
+                                  childAspectRatio: isPortrait
+                                      ? 0.6
+                                      : 0.68, // shorter cards in landscape
+                                ),
+                            itemBuilder: (context, index) {
+                              final product = products[index];
+                              final option = product.options.first;
+
+                              // Dynamic sizes
+                              final imageHeight = isPortrait
+                                  ? shortestSide * 0.15
+                                  : shortestSide * 0.35; // smaller in landscape
+                              final fontSize = isPortrait
+                                  ? shortestSide * 0.035
+                                  : shortestSide * 0.035; // reduce slightly
+                              final buttonWidth = isPortrait
+                                  ? shortestSide * 0.25
+                                  : shortestSide * 0.25;
+
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => ProductDetails(
+                                        productId: product.productId,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    color: Colors.white,
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: Column(
+                                      children: [
+                                        // Product Image
+                                        Expanded(
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                              color: CustomColors.baseContainer,
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(5),
+                                              child: Image.network(
+                                                product.thumbnail,
+                                                height: imageHeight,
+                                                fit: BoxFit.contain,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+
+                                        // Title
+                                        Text(
+                                          product.title,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: fontSize,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const Divider(
+                                          indent: 10,
+                                          endIndent: 10,
+                                        ),
+
+                                        // Unit & Price
+                                        IntrinsicHeight(
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceAround,
+                                            children: [
+                                              Text(
+                                                option.unit,
+                                                style: TextStyle(
+                                                  fontSize: fontSize * 0.8,
+                                                  color: Colors.black54,
+                                                ),
+                                              ),
+                                              const VerticalDivider(),
+                                              Text(
+                                                "Rs.${option.offerPrice.floor()}",
+                                                style: TextStyle(
+                                                  fontSize: fontSize,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 5),
+
+                                        // Add Button
+                                        SizedBox(
+                                          height: 30,
+                                          width: buttonWidth,
+                                          child: ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              elevation: 0,
+                                              backgroundColor:
+                                                  CustomColors.baseColor,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                              ),
+                                            ),
+                                            onPressed: () async {
+                                              final productDetail =
+                                                  await fetchProductDetail(
+                                                    product.productId,
+                                                  );
+                                              showProductOptionBottomSheet(
+                                                context: context,
+                                                product: productDetail!,
+                                              );
+                                            },
+                                            child: const Text(
+                                              'Add',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               );
                             },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                                color: Colors.white,
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8),
-                                child: Column(
-                                  children: [
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(12),
-                                        color: CustomColors.baseContainer,
-                                      ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(5),
-                                        child: Image.network(
-                                          product.thumbnail,
-                                          height: 80,
-                                          fit: BoxFit.contain,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      product.title,
-                                      maxLines: 1,
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const Divider(indent: 10, endIndent: 10),
-                                    IntrinsicHeight(
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceAround,
-                                        children: [
-                                          Text(
-                                            option.unit,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.black54,
-                                            ),
-                                          ),
-                                          const VerticalDivider(),
-                                          Text(
-                                            "Rs.${option.offerPrice.floor()}",
-                                            style: const TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(height: 5),
-                                    SizedBox(
-                                      height: 30,
-                                      width: 80,
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          elevation: 0,
-                                          backgroundColor:
-                                              CustomColors.baseColor,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              5,
-                                            ),
-                                          ),
-                                        ),
-                                        onPressed: () async {
-                                          final productDetail =
-                                              await fetchProductDetail(
-                                                product.productId,
-                                              );
-                                          showProductOptionBottomSheet(
-                                            context: context,
-                                            product:
-                                                productDetail!, // Make sure this is the correct ProductDetail object
-                                          );
-                                        },
-                                        child: const Text(
-                                          'Add',
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+                          ),
+                  );
+                },
               ),
             ),
           ],

@@ -98,7 +98,7 @@ class _ProductDetailsState extends State<ProductDetails> {
             _buildProductDescription(product),
             const SizedBox(height: 25),
             _buildPriceAndOption(product),
-            const SizedBox(height: 40),
+            const SizedBox(height: 25),
             _buildBestDealHeader(),
             const SizedBox(height: 12),
             buildBestDealItems(),
@@ -171,7 +171,7 @@ class _ProductDetailsState extends State<ProductDetails> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          'Best Deal',
+          'Trending Products',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
       ],
@@ -192,133 +192,157 @@ class _ProductDetailsState extends State<ProductDetails> {
 
         final products = snapshot.data!;
 
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(products.length.clamp(0, 2), (index) {
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: List.generate(products.length, (index) {
-                  final product = products[index];
-                  final option = product.options.first;
+        return OrientationBuilder(
+          builder: (context, orientation) {
+            final isPortrait = orientation == Orientation.portrait;
+            final size = MediaQuery.of(context).size;
+            final shortestSide = size.shortestSide;
+            final screenWidth = size.width;
 
-                  double screenWidth = MediaQuery.of(context).size.width;
-                  double cardWidth = screenWidth * 0.4;
-                  double imageHeight = screenWidth * 0.25;
-                  double fontSize = screenWidth * 0.035;
+            /// Make card width smaller in landscape
+            final cardWidth = isPortrait
+                ? screenWidth * 0.4
+                : screenWidth * 0.22;
 
-                  return Container(
-                    margin: EdgeInsets.only(right: screenWidth * 0.025),
-                    width: cardWidth,
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                ProductDetails(productId: product.id),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: Colors.white,
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(screenWidth * 0.03),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Container(
-                                  color: CustomColors.baseContainer,
-                                  height:
-                                      MediaQuery.of(context).size.height * 0.15,
-                                  width: screenWidth,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(5.0),
-                                    child: Image.network(
-                                      product.thumbnail,
-                                      height: imageHeight,
-                                      width: double.infinity,
-                                      fit: BoxFit.contain,
-                                      errorBuilder: (_, __, ___) =>
-                                          const Icon(Icons.broken_image),
-                                    ),
-                                  ),
-                                ),
+            /// Image height proportional to card width
+            final imageHeight = isPortrait ? cardWidth * 0.6 : cardWidth * 0.4;
+
+            /// Keep font size same as before (no change)
+            final fontSize = shortestSide * 0.035;
+
+            return Container(
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(12),
+                ),
+              ),
+              // padding: const EdgeInsets.symmetric(vertical: 12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: List.generate(products.length, (index) {
+                        final product = products[index];
+                        final option = product.options.first;
+
+                        return GestureDetector(
+                          onTap: () async {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    ProductDetails(productId: product.id),
                               ),
-                              SizedBox(height: screenWidth * 0.02),
-                              Text(
-                                product.title,
-                                style: TextStyle(
-                                  fontSize: fontSize,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              SizedBox(height: screenWidth * 0.01),
-                              Text(
-                                option.unit,
-                                style: TextStyle(
-                                  fontSize: fontSize * 0.9,
-                                  color: Colors.grey[700],
-                                ),
-                              ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    'Rs.${option.offerPrice.toStringAsFixed(2)}',
-                                    style: TextStyle(
-                                      fontSize: fontSize,
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () async {
-                                      final productDetail =
-                                          await fetchProductDetail(product.id);
-                                      showProductOptionBottomSheet(
-                                        context: context,
-                                        product:
-                                            productDetail!, // Make sure this is the correct ProductDetail object
-                                      );
-                                    },
-                                    child: Container(
-                                      width: 60,
-                                      height: 30,
-                                      decoration: BoxDecoration(
-                                        color: CustomColors.baseColor,
-                                        borderRadius: BorderRadius.circular(7),
+                            );
+                          },
+                          child: Container(
+                            margin: EdgeInsets.only(
+                              right: isPortrait
+                                  ? screenWidth * 0.025
+                                  : screenWidth * 0.015,
+                            ),
+                            width: cardWidth,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              color: Colors.white,
+                            ),
+                            padding: EdgeInsets.all(cardWidth * 0.05),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    color: CustomColors.baseContainer,
+                                    height: imageHeight,
+                                    width: double.infinity,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(5.0),
+                                      child: Image.network(
+                                        product.thumbnail,
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (_, __, ___) =>
+                                            const Icon(Icons.broken_image),
                                       ),
-                                      child: Center(
-                                        child: Text(
-                                          'Add',
-                                          style: TextStyle(
-                                            fontSize: fontSize * 0.9,
-                                            color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: shortestSide * 0.02),
+                                Text(
+                                  product.title,
+                                  style: TextStyle(
+                                    fontSize: fontSize,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                                SizedBox(height: shortestSide * 0.01),
+                                Text(
+                                  option.unit,
+                                  style: TextStyle(
+                                    fontSize: fontSize * 0.8,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Rs.${option.offerPrice.floor()}',
+                                      style: TextStyle(
+                                        fontSize: fontSize,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 30,
+                                      width: isPortrait ? 80 : 65,
+                                      child: ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          elevation: 0,
+                                          backgroundColor:
+                                              CustomColors.baseColor,
+                                          padding: EdgeInsets.zero,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              5,
+                                            ),
                                           ),
+                                        ),
+                                        onPressed: () async {
+                                          final productDetail =
+                                              await fetchProductDetail(
+                                                product.id,
+                                              );
+                                          showProductOptionBottomSheet(
+                                            context: context,
+                                            product: productDetail!,
+                                          );
+                                        },
+                                        child: const Text(
+                                          'Add',
+                                          style: TextStyle(color: Colors.white),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ),
+                        );
+                      }),
                     ),
-                  );
-                }),
+                  ),
+                  const SizedBox(height: 30),
+                ],
               ),
             );
-          }),
+          },
         );
       },
     );

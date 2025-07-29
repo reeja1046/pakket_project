@@ -1,7 +1,9 @@
 import 'package:pakket/controller/token_checking_helper.dart';
 import 'package:pakket/model/address.dart';
 
-Future<Address?> addAddressApi(AddressRequest addressRequest) async {
+Future<Map<String, dynamic>?> addAddressApi(
+  AddressRequest addressRequest,
+) async {
   final data = await postRequest(
     'https://pakket-dev.vercel.app/api/app/address',
     addressRequest.toJson(),
@@ -9,11 +11,18 @@ Future<Address?> addAddressApi(AddressRequest addressRequest) async {
 
   if (data == null) return null; // token expired handled globally
 
-  return Address.fromJson(data['address']);
+  return {
+    'success': data['success'] ?? false,
+    'address': data['success'] == true && data['address'] != null
+        ? Address.fromJson(data['address'])
+        : null,
+  };
 }
 
 Future<List<Address>> fetchAddresses() async {
-  final data = await getRequest('https://pakket-dev.vercel.app/api/app/address');
+  final data = await getRequest(
+    'https://pakket-dev.vercel.app/api/app/address',
+  );
 
   if (data == null) return []; // token expired handled globally
 
@@ -22,7 +31,9 @@ Future<List<Address>> fetchAddresses() async {
 }
 
 Future<bool> deleteAddressApi(String addressId) async {
-  final data = await deleteRequest('https://pakket-dev.vercel.app/api/app/address/$addressId');
+  final data = await deleteRequest(
+    'https://pakket-dev.vercel.app/api/app/address/$addressId',
+  );
 
   if (data == null) return false; // token expired handled globally
 
