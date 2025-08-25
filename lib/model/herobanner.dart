@@ -12,7 +12,7 @@ class HeroBanner {
   });
 
   factory HeroBanner.fromJson(Map<String, dynamic> json) {
-    print(json['categoryName']);
+   
     return HeroBanner(
       url: json['banner']['url'],
       name: json['name'],

@@ -42,7 +42,6 @@ class HomeScreen extends StatelessWidget {
             builder: (context, orientation) {
               final isPortrait = orientation == Orientation.portrait;
               final size = MediaQuery.of(context).size;
-              final width = size.width;
 
               // Category height & icon size adaptive
               final categoryHeight = isPortrait ? 110.0 : 110.0;

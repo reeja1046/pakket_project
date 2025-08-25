@@ -127,7 +127,6 @@ Widget buildProductGrid(List<CategoryProduct> products) {
 
   return LayoutBuilder(
     builder: (context, constraints) {
-      final size = MediaQuery.of(context).size;
       final isPortrait =
           MediaQuery.of(context).orientation == Orientation.portrait;
 
@@ -261,17 +260,17 @@ Widget showTrendingProduct(Future<List<Product>> trendingProducts) {
                     () {},
                   ),
                 ),
-                const SizedBox(height: 10),
+
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: List.generate(products.length, (index) {
-                      final product = products[index];
-                      final option = product.options.first;
+                  child: Padding(
+                    padding: const EdgeInsets.all(14.0),
+                    child: Row(
+                      children: List.generate(products.length, (index) {
+                        final product = products[index];
+                        final option = product.options.first;
 
-                      return Padding(
-                        padding: const EdgeInsets.only(left: 14.0),
-                        child: GestureDetector(
+                        return GestureDetector(
                           onTap: () async {
                             Navigator.push(
                               context,
@@ -378,9 +377,9 @@ Widget showTrendingProduct(Future<List<Product>> trendingProducts) {
                               ],
                             ),
                           ),
-                        ),
-                      );
-                    }),
+                        );
+                      }),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 30),

@@ -71,14 +71,14 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
               });
             })
             .catchError((e) {
-              print('Error fetching products: $e');
+              Get.snackbar('Error!!','Error fetching products: $e');
               setState(() => isLoading = false);
             });
       } else {
         fetchProducts(initialCategoryId);
       }
     } catch (e) {
-      print('Error fetching categories: $e');
+      Get.snackbar('Error!!','Error fetching categories: $e');
     }
   }
 
@@ -91,7 +91,7 @@ class _AllGroceryItemsState extends State<AllGroceryItems> {
         isLoading = false;
       });
     } catch (e) {
-      print('Error fetching products: $e');
+     Get.snackbar('Error!!','Error fetching products: $e');
       setState(() => isLoading = false);
     }
   }

@@ -3,7 +3,7 @@ import 'package:pakket/model/trending.dart';
 
 Future<List<Product>> fetchTrendingProducts() async {
   final data = await getRequest(
-    'https://pakket-dev.vercel.app/api/app/product/trending?limit=1',
+    'https://pakket-dev.vercel.app/api/app/product/trending',
   );
 
   if (data == null) return []; // token expired handled globally

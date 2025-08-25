@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/view/search/widget.dart';
@@ -49,7 +50,7 @@ class _SearchDetailsState extends State<SearchDetails> {
         }
       }
     } catch (e) {
-      debugPrint("Error fetching products: $e");
+      Get.snackbar('Error!!', "Error fetching products: $e");
     } finally {
       if (mounted) setState(() => isLoading = false);
     }
@@ -82,7 +83,7 @@ class _SearchDetailsState extends State<SearchDetails> {
           }
         })
         .catchError((e) {
-          debugPrint("Search error: $e");
+          Get.snackbar('Error!!', "Search error: $e");
         })
         .whenComplete(() {
           _currentRequest = null;

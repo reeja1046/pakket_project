@@ -6,8 +6,6 @@ class HomeShimmerLoader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Shimmer.fromColors(

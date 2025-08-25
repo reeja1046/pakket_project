@@ -50,7 +50,6 @@ class AllGroceryController extends GetxController {
       }
     } catch (e) {
       isLoading.value = false;
-      print('Error fetching initial data: $e');
     }
   }
 
@@ -68,7 +67,7 @@ class AllGroceryController extends GetxController {
         products.value = fetchedProducts;
       }
     } catch (e) {
-      print('Error fetching products: $e');
+      Get.snackbar('Error!!','Error fetching products: $e');
     } finally {
       isLoading.value = false;
     }

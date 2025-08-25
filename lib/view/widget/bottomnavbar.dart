@@ -23,7 +23,7 @@ class BottomNavScreen extends StatelessWidget {
 
   /// Function to launch WhatsApp
   Future<void> _openWhatsApp() async {
-    const phone = "+918089996656"; // Replace with your WhatsApp number
+    const phone = "+918089006656"; // Replace with your WhatsApp number
     final url = Uri.parse("https://wa.me/$phone");
 
     if (await canLaunchUrl(url)) {

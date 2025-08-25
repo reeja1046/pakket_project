@@ -1,13 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pakket/controller/cart.dart';
 import 'package:pakket/controller/product.dart';
 import 'package:pakket/controller/trending.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/model/product.dart';
 import 'package:pakket/model/trending.dart';
-import 'package:pakket/view/checkout/checkout.dart';
 import 'package:pakket/view/product/widget.dart';
 import 'package:pakket/view/widget/modal.dart';
 

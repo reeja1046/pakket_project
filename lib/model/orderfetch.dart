@@ -74,8 +74,6 @@ class OrderItem {
   });
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
-    print(json);
-    print('clicked on the order item dealllllll');
     return OrderItem(
       title: json['title'],
       thumbnail: json['thumbnail']['url'],

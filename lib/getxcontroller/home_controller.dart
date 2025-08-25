@@ -67,7 +67,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
 
       isAllDataLoaded.value = true;
     } catch (e) {
-      print('Error in loading home data: $e');
+      Get.snackbar('Error!!','Error in loading home data: $e');
       isAllDataLoaded.value =
           true; // Show fallback UI instead of infinite loader
     }
@@ -91,7 +91,7 @@ class HomeController extends GetxController with WidgetsBindingObserver {
         locationStatus.value = 'fetched';
       }
     } catch (e) {
-      print(e);
+     
       locationStatus.value = 'error';
       currentAddressLine1.value = 'Fetching location...'; // fallback
     }

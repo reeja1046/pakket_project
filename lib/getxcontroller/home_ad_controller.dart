@@ -17,11 +17,10 @@ class HomeAdController extends GetxController {
   Future<void> fetchHomeBanner() async {
     final token = await getToken();
     if (token == null) {
-      print('No token found');
+      Get.snackbar('No token found', 'Please login again!!!');
       return;
     }
 
-    print('*********');
     try {
       final response = await connect.get(
         'https://pakket-dev.vercel.app/api/app/offers/banner?type=home-banner',
@@ -35,20 +34,20 @@ class HomeAdController extends GetxController {
         final result = response.body['result'];
         if (result != null) {
           homeBanner.value = HomeBanner.fromJson(result);
-          print('Banner fetched: ${homeBanner.value}');
+         
         }
       } else {
-        print('Failed to fetch banner: ${response.body}');
+        Get.snackbar('Error','Failed to fetch banner: ${response.body}');
       }
     } catch (e) {
-      print('Error fetching banner: $e');
+      Get.snackbar('Error','Error fetching banner: $e');
     }
   }
 
   Future<void> fetchCartBanner() async {
     final token = await getToken();
     if (token == null) {
-      print('No token found');
+      Get.snackbar('Error','No token found');
       return;
     }
 
@@ -65,14 +64,13 @@ class HomeAdController extends GetxController {
         final result = response.body['result'];
         if (result != null) {
           checkoutbanner.value = HomeCheckoutBanner.fromJson(result);
-          print('Banner fetched: ${checkoutbanner.value}');
         }
       } else {
-        print('Failed to fetch banner: ${response.body}');
-      }
-    } catch (e) {
-      print('Error fetching banner: $e');
+      Get.snackbar('Error','Failed to fetch banner: ${response.body}');
     }
+    } catch (e) {
+      Get.snackbar('Error','Error fetching banner: $e');
+     }
   }
 
   Future<String?> getToken() async {

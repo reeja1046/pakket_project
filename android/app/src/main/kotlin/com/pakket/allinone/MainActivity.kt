@@ -1,4 +1,4 @@
-package com.example.pakket
+package com.pakket.allinone
 
 import io.flutter.embedding.android.FlutterActivity
 

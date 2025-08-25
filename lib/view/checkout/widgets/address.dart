@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:pakket/controller/pincode.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:pakket/controller/address.dart';
@@ -86,7 +85,6 @@ class _AddressModalState extends State<AddressModal> {
   }
 
   void saveAddress() async {
-    print('-------------');
     if (_formKey.currentState!.validate()) {
       double? latitude;
       double? longitude;
@@ -96,8 +94,6 @@ class _AddressModalState extends State<AddressModal> {
           final prefs = await SharedPreferences.getInstance();
           latitude = prefs.getDouble('latitude');
           longitude = prefs.getDouble('longitude');
-          print(latitude);
-          print(longitude);
         } catch (e) {
           showSuccessSnackbar(context, 'Failed to get current location: $e');
           return;
@@ -115,7 +111,6 @@ class _AddressModalState extends State<AddressModal> {
       );
 
       final result = await addAddressApi(request);
-      print(result);
 
       if (result == null) return; // token expired handled globally
 
@@ -123,7 +118,6 @@ class _AddressModalState extends State<AddressModal> {
       final Address? newAddress = result['address'];
 
       if (success && newAddress != null) {
-        print('yes');
         Navigator.pop(context);
         // Show success blur dialog
         showBlurDialog(context, 'Deliverable', 'Address added successfully!');

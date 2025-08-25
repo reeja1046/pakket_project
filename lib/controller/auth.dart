@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:pakket/core/constants/color.dart';
+import 'package:pakket/getxcontroller/home_ad_controller.dart';
+import 'package:pakket/getxcontroller/home_controller.dart';
 import 'package:pakket/view/widget/bottomnavbar.dart';
 import 'package:pakket/view/widget/snackbar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -143,7 +146,9 @@ Future<void> login(String phone, String password, BuildContext context) async {
         await prefs.setBool('isLoggedIn', true);
         //show success snackbar
         showSuccessSnackbar(context, 'Login successful! Welcome back.');
-
+        // ✅ Clear old controllers so they re-fetch with new token
+        Get.delete<HomeController>();
+        Get.delete<HomeAdController>();
         // ✅ Navigate to Home
         Navigator.pushReplacement(
           context,
@@ -154,9 +159,8 @@ Future<void> login(String phone, String password, BuildContext context) async {
         showSuccessSnackbar(context, 'Token is not provided');
       }
     } else {
-      print(response.body);
       //show failed snackbar
-      showSuccessSnackbar(context, data['message']);
+      // showSuccessSnackbar(context, data['message']);
     }
   } catch (e) {
     showSuccessSnackbar(context, 'An error occurred. Please try again.');

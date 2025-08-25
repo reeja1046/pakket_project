@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:pakket/core/constants/color.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -96,7 +97,7 @@ void launchPhone(String phoneNumber) async {
   if (await canLaunchUrl(url)) {
     await launchUrl(url);
   } else {
-    throw 'Could not launch $url';
+    Get.snackbar('Error', 'Could not launch $url');
   }
 }
 
@@ -105,7 +106,7 @@ void launchWhatsApp(String phoneNumber) async {
   if (await canLaunchUrl(url)) {
     await launchUrl(url, mode: LaunchMode.externalApplication);
   } else {
-    throw 'Could not launch $url';
+    Get.snackbar('Error', 'Could not launch $url');
   }
 }
 
@@ -121,10 +122,10 @@ void launchEmail(String email) async {
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
-      debugPrint('Cannot launch email: $url');
+      Get.snackbar('Error!!', 'Cannot launch email: $url');
     }
   } catch (e) {
-    debugPrint('Error launching email: $e');
+    Get.snackbar('Error!!', 'Error launching email: $e');
   }
 }
 
@@ -134,7 +135,7 @@ Future<void> launchExternalLink(String urlString) async {
 
     // Validate URL scheme
     if (!['http', 'https'].contains(url.scheme)) {
-      debugPrint('Invalid URL scheme: $urlString');
+      Get.snackbar('Error!!', 'Invalid URL scheme: $urlString');
       return;
     }
 
@@ -142,10 +143,10 @@ Future<void> launchExternalLink(String urlString) async {
     if (canLaunch) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
-      debugPrint('Could not launch URL: $urlString');
+      Get.snackbar('Error!!', 'Could not launch URL: $urlString');
       // Optional: Show a snackbar or dialog if needed
     }
   } catch (e) {
-    debugPrint('Error launching URL: $e');
+    Get.snackbar('Error!!', 'Error launching URL: $e');
   }
 }

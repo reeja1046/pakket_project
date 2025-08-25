@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:pakket/controller/address.dart';
 import 'package:pakket/model/order.dart';
 import 'package:pakket/controller/orderdetails.dart';
@@ -64,7 +65,7 @@ class _HelpCenterListState extends State<HelpCenterList> {
         orderList = orders;
       });
     } catch (e) {
-      print('Error fetching orders: $e');
+      Get.snackbar('Error!!', 'Error fetching orders: $e');
     } finally {
       setState(() {
         isLoadingOrders = false;
